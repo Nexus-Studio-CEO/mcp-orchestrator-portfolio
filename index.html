@@ -1,249 +1,377 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Orchestrator | Nexus Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/fontawesome.min.css">
+    <title>Client-Side REST API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --background-color: #0a0a0f;
-            --text-color: #ffffff;
-            --font-family: 'Inter', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+        .mono { font-family: 'Fira Code', monospace; }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
-            color: var(--text-color);
-            overflow-x: hidden;
-        }
-        .gradient-background {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        .glassmorphism {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-        }
-        .hero {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .hero h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        .hero p {
-            font-size: 18px;
-            margin-bottom: 40px;
-        }
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .feature {
-            margin: 20px;
-            width: calc(33.33% - 40px);
-            text-align: center;
-        }
-        .feature h2 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .feature p {
-            font-size: 16px;
-        }
-        .how-it-works {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .step {
-            margin: 20px;
-            width: calc(33.33% - 40px);
-            text-align: center;
-        }
-        .step h2 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .step p {
-            font-size: 16px;
-        }
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .tech {
-            margin: 20px;
-            width: calc(20% - 40px);
-            text-align: center;
-        }
-        .tech h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .call-to-action {
-            text-align: center;
-            margin: 40px 0;
-        }
-        .call-to-action a {
-            background: var(--primary-color);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            transition: background 0.2s ease;
-        }
-        .call-to-action a:hover {
-            background: var(--secondary-color);
-        }
-        .live-demo {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .live-demo a {
-            background: var(--primary-color);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            transition: background 0.2s ease;
-        }
-        .live-demo a:hover {
-            background: var(--secondary-color);
-        }
-        .footer {
-            text-align: center;
-            margin: 40px 0;
-        }
-        .social-links {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .social-link {
-            margin: 0 10px;
+        .status-online { background: #10b981; box-shadow: 0 0 12px #10b981; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
-<body>
-    <header class="hero gradient-background">
-        <h1>Nexus Studio</h1>
-        <p>MCP Orchestrator - AI-Powered Development & Marketing Automation</p>
-        <a href="https://github.com/Nexus-Studio-CEO" class="live-demo">Live Demo</a>
-    </header>
-    <section class="features glassmorphism">
-        <div class="feature">
-            <h2>AI Dev</h2>
-            <p>Automate your development workflow with AI-powered tools</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 6.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-black mb-2">Client-Side REST API</h1>
+                    <p class="text-blue-100">Expérience : API REST dans le navigateur</p>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center gap-2 text-sm font-bold">
+                        <span class="status-dot status-online"></span>
+                        API ACTIVE
+                    </div>
+                    <div class="text-xs text-blue-100 mt-1 mono" id="session-id"></div>
+                </div>
+            </div>
         </div>
-        <div class="feature">
-            <h2>Auto Deploy</h2>
-            <p>Automate your deployment process with ease</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cloud"><path d="M18 10h-1.26A8 8 0 1 0 6 16h2a7 7 0 0 0 7 7v1.26l2-2z"></path><path d="M12 4.5v7.5"></path><line x1="16" y1="5.5" x2="16" y2="11.5"></line></svg>
+
+        <!-- API Info -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                📡 Endpoints disponibles
+            </h2>
+            <div class="space-y-2 text-sm mono">
+                <div class="bg-green-900/30 border border-green-700 p-3 rounded">
+                    <span class="text-green-400 font-bold">GET</span> 
+                    <span class="text-gray-300">/api/status</span>
+                    <span class="text-gray-500 ml-4">→ État du serveur</span>
+                </div>
+                <div class="bg-blue-900/30 border border-blue-700 p-3 rounded">
+                    <span class="text-blue-400 font-bold">POST</span> 
+                    <span class="text-gray-300">/api/process</span>
+                    <span class="text-gray-500 ml-4">→ Traitement de texte</span>
+                </div>
+                <div class="bg-green-900/30 border border-green-700 p-3 rounded">
+                    <span class="text-green-400 font-bold">GET</span> 
+                    <span class="text-gray-300">/api/data</span>
+                    <span class="text-gray-500 ml-4">→ Liste des données</span>
+                </div>
+                <div class="bg-purple-900/30 border border-purple-700 p-3 rounded">
+                    <span class="text-purple-400 font-bold">PUT</span> 
+                    <span class="text-gray-300">/api/data/:id</span>
+                    <span class="text-gray-500 ml-4">→ Mise à jour</span>
+                </div>
+            </div>
         </div>
-        <div class="feature">
-            <h2>Marketing Automation</h2>
-            <p>Automate your marketing workflow with AI-powered tools</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-target"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+
+        <!-- Test Interface -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <h2 class="text-xl font-bold mb-4">🧪 Interface de Test</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 mb-2">Endpoint</label>
+                    <select id="endpoint" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white">
+                        <option value="/api/status">GET /api/status</option>
+                        <option value="/api/data">GET /api/data</option>
+                        <option value="/api/process">POST /api/process</option>
+                    </select>
+                </div>
+
+                <div id="body-section" class="hidden">
+                    <label class="block text-sm font-bold text-gray-400 mb-2">Body (JSON)</label>
+                    <textarea id="request-body" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white mono text-sm" placeholder='{"text": "Votre texte ici"}'></textarea>
+                </div>
+
+                <button onclick="testAPI()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                    Envoyer la Requête
+                </button>
+
+                <div id="response-section" class="hidden">
+                    <h3 class="text-sm font-bold text-gray-400 mb-2">Réponse :</h3>
+                    <pre id="response-output" class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm mono overflow-x-auto"></pre>
+                </div>
+            </div>
         </div>
-    </section>
-    <section class="how-it-works glassmorphism">
-        <div class="step">
-            <h2>Step 1</h2>
-            <p>Set up your project with our easy-to-use interface</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6v-6M14 12h6"></path></svg>
+
+        <!-- Logs en temps réel -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <h2 class="text-xl font-bold mb-4">📊 Logs API (Temps Réel)</h2>
+            <div id="logs" class="space-y-2 max-h-64 overflow-y-auto text-sm mono"></div>
         </div>
-        <div class="step">
-            <h2>Step 2</h2>
-            <p>Configure your AI-powered development and marketing automation tools</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 1.065 1.32c1.414.869 1.52 3.326 1.52 4.61 0 3.602-2.908 5.484-5.149 5.484-1.594 0-3.108-1.216-3.565-2.76 1.232 1.178 3.44 1.83 5.134 1.83a10.02 10.02 0 0 0 4.317-1.107 4.688 4.688 0 0 0 1.33-3.38 1.72 1.72 0 0 0-1.07-1.45c-.996-.942-3.007-1.23-4.68-1.23z"></path><path d="M10.325 16.86c-1.354-.54-3.526-1.23-4.68-1.23-.426 0-.996.28-1.07.76a1.72 1.72 0 0 0-.09 1.32c1.414.869 3.526 1.33 5.135 1.33 2.24 0 4.317-1.756 4.68-3.39 0-1.23-.996-2.76-2.76-3.38z"></path></svg>
+
+        <!-- Instructions pour Python -->
+        <div class="bg-yellow-900/20 border border-yellow-700 p-6 rounded-xl">
+            <h3 class="text-lg font-bold text-yellow-400 mb-3">🐍 Test depuis Python/Colab</h3>
+            <p class="text-sm text-gray-300 mb-3">Une fois cette page déployée, utilisez ce code Python :</p>
+            <pre class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-xs mono overflow-x-auto text-green-400">import requests
+import json
+
+# URL de ton HTML déployé (GitHub Pages / Vercel)
+base_url = "https://your-username.github.io/api-client.html"
+
+# Test 1: GET status
+response = requests.get(f"{base_url}?endpoint=/api/status")
+print("Status:", response.json())
+
+# Test 2: POST process
+response = requests.post(
+    f"{base_url}?endpoint=/api/process",
+    json={"text": "Hello from Python!"}
+)
+print("Result:", response.json())</pre>
         </div>
-        <div class="step">
-            <h2>Step 3</h2>
-            <p>Launch your project and start automating your workflow</p>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rocket"><path d="M10 1a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-2.085a1.5 1.5 0 0 0-1.073.012L3 5a2 2 0 0 0-2 2v14c0 1.105.887 2 2 2h6a2 2 0 0 0 2-2V3z"></path><path d="M15 7v6"></path><path d="M17 9v3"></path></svg>
-        </div>
-    </section>
-    <section class="tech-stack glassmorphism">
-        <div class="tech">
-            <h2>Groq</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-activity"><path d="M22 12h-4l-5 7-6-7h-4l9 12 9-12z"></path></svg>
-        </div>
-        <div class="tech">
-            <h2>Claude</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 6.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        </div>
-        <div class="tech">
-            <h2>MCP</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-target"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-        </div>
-        <div class="tech">
-            <h2>GitHub</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-7-2.5-5 2.5-5 5-8 5 0 7 2.5 7 7 0 2.5-2 5-5 5-1.5 0-3-1.25-4.5-2.75-.5-1-1-2-1-2.75 0-.5 0-1 1-1.75 1-.5 2.5-1 3.5-1.75 1 0 2.5.5 3.5 1.5-.5 1-1 2-1 2.75 0 .5.5 1 1.25 1.75 1 .5 2.25 1.25 3.25 1.75"></path><path d="M15 8h.01"></path><path d="M17 4h-1v2h1"></path></svg>
-        </div>
-        <div class="tech">
-            <h2>Vercel</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cloud"><path d="M18 10h-1.26A8 8 0 1 0 6 16h2a7 7 0 0 0 7 7v1.26l2-2z"></path><path d="M12 4.5v7.5"></path><line x1="16" y1="5.5" x2="16" y2="11.5"></line></svg>
-        </div>
-    </section>
-    <section class="call-to-action glassmorphism">
-        <a href="https://github.com/Nexus-Studio-CEO">Get Started with MCP Orchestrator</a>
-    </section>
-    <footer class="footer glassmorphism">
-        <p> Built by Nexus Studio CEO</p>
-        <div class="social-links">
-            <a href="#" class="social-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
-            </a>
-            <a href="#" class="social-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a6 6 0 0 1 6-6z"></path></svg>
-            </a>
-            <a href="#" class="social-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><path d="M12 2L4 7.586l6.293 6.293L3 23l9-9 9 9 3-23z"></path><path d="M4 17h.01"></path></svg>
-            </a>
-        </div>
-    </footer>
+    </div>
+
     <script>
-        const sections = document.querySelectorAll('section');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                } else {
-                    entry.target.classList.remove('visible');
-                }
+        // ========== API REST CÔTÉ CLIENT ==========
+        
+        const API_DATA = {
+            sessionId: 'session-' + Math.random().toString(36).substr(2, 9),
+            startTime: Date.now(),
+            storage: [],
+            requestCount: 0
+        };
+
+        document.getElementById('session-id').textContent = `Session: ${API_DATA.sessionId}`;
+
+        // Service Worker pour intercepter les fetch
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(createServiceWorkerBlob()).then(reg => {
+                log('✅ Service Worker installé', 'success');
+            }).catch(err => {
+                log('❌ Service Worker failed: ' + err.message, 'error');
             });
-        }, { threshold: 0.5 });
-        sections.forEach((section) => {
-            observer.observe(section);
+        }
+
+        function createServiceWorkerBlob() {
+            const swCode = `
+                self.addEventListener('install', (event) => {
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', (event) => {
+                    event.waitUntil(self.clients.claim());
+                });
+
+                self.addEventListener('fetch', (event) => {
+                    const url = new URL(event.request.url);
+                    
+                    // Intercepter uniquement les requêtes /api/*
+                    if (url.pathname.startsWith('/api/')) {
+                        event.respondWith(handleAPIRequest(event.request));
+                    }
+                });
+
+                async function handleAPIRequest(request) {
+                    const url = new URL(request.url);
+                    const path = url.pathname;
+                    const method = request.method;
+
+                    let responseData;
+                    let status = 200;
+
+                    try {
+                        if (method === 'GET' && path === '/api/status') {
+                            responseData = {
+                                status: 'online',
+                                message: 'API Client-Side active',
+                                uptime: Date.now() - ${API_DATA.startTime},
+                                sessionId: '${API_DATA.sessionId}',
+                                timestamp: new Date().toISOString()
+                            };
+                        }
+                        else if (method === 'GET' && path === '/api/data') {
+                            responseData = {
+                                data: [],
+                                count: 0,
+                                message: 'Liste des données'
+                            };
+                        }
+                        else if (method === 'POST' && path === '/api/process') {
+                            const body = await request.json();
+                            const text = body.text || '';
+                            
+                            responseData = {
+                                original: text,
+                                processed: {
+                                    uppercase: text.toUpperCase(),
+                                    lowercase: text.toLowerCase(),
+                                    reversed: text.split('').reverse().join(''),
+                                    length: text.length,
+                                    words: text.split(' ').length
+                                },
+                                timestamp: new Date().toISOString()
+                            };
+                        }
+                        else {
+                            status = 404;
+                            responseData = { error: 'Endpoint not found' };
+                        }
+                    } catch (error) {
+                        status = 500;
+                        responseData = { error: error.message };
+                    }
+
+                    return new Response(JSON.stringify(responseData), {
+                        status: status,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+                            'Access-Control-Allow-Headers': 'Content-Type'
+                        }
+                    });
+                }
+            `;
+
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            return URL.createObjectURL(blob);
+        }
+
+        // Simulateur d'API sans Service Worker (fallback)
+        async function handleLocalAPI(endpoint, method = 'GET', body = null) {
+            API_DATA.requestCount++;
+            log(`${method} ${endpoint}`, 'info');
+
+            let response;
+
+            if (method === 'GET' && endpoint === '/api/status') {
+                response = {
+                    status: 'online',
+                    message: 'API Client-Side active (Fallback mode)',
+                    uptime: Date.now() - API_DATA.startTime,
+                    sessionId: API_DATA.sessionId,
+                    requestCount: API_DATA.requestCount,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            else if (method === 'GET' && endpoint === '/api/data') {
+                response = {
+                    data: API_DATA.storage,
+                    count: API_DATA.storage.length,
+                    message: 'Liste des données'
+                };
+            }
+            else if (method === 'POST' && endpoint === '/api/process') {
+                const text = body.text || '';
+                response = {
+                    original: text,
+                    processed: {
+                        uppercase: text.toUpperCase(),
+                        lowercase: text.toLowerCase(),
+                        reversed: text.split('').reverse().join(''),
+                        length: text.length,
+                        words: text.split(' ').length,
+                        vowels: (text.match(/[aeiou]/gi) || []).length
+                    },
+                    timestamp: new Date().toISOString()
+                };
+            }
+            else if (method === 'PUT' && endpoint.startsWith('/api/data/')) {
+                const id = endpoint.split('/').pop();
+                response = {
+                    message: `Updated item ${id}`,
+                    data: body
+                };
+            }
+            else {
+                throw new Error('Endpoint not found');
+            }
+
+            log(`✓ Response: ${JSON.stringify(response).substr(0, 50)}...`, 'success');
+            return response;
+        }
+
+        // Test depuis l'interface
+        async function testAPI() {
+            const endpoint = document.getElementById('endpoint').value;
+            const method = endpoint.includes('POST') ? 'POST' : endpoint.includes('PUT') ? 'PUT' : 'GET';
+            const path = endpoint.split(' ')[1];
+
+            let body = null;
+            if (method === 'POST' || method === 'PUT') {
+                const bodyText = document.getElementById('request-body').value;
+                try {
+                    body = bodyText ? JSON.parse(bodyText) : {};
+                } catch (e) {
+                    log('❌ Invalid JSON', 'error');
+                    return;
+                }
+            }
+
+            try {
+                const result = await handleLocalAPI(path, method, body);
+                document.getElementById('response-section').classList.remove('hidden');
+                document.getElementById('response-output').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Gestion des query params pour Python
+        window.addEventListener('load', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const endpoint = params.get('endpoint');
+            const bodyParam = params.get('body');
+
+            if (endpoint) {
+                log(`📡 Requête externe détectée: ${endpoint}`, 'info');
+                
+                try {
+                    let body = null;
+                    if (bodyParam) {
+                        body = JSON.parse(decodeURIComponent(bodyParam));
+                    }
+
+                    const method = params.get('method') || 'GET';
+                    const result = await handleLocalAPI(endpoint, method, body);
+                    
+                    // Retourner la réponse
+                    document.body.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                } catch (error) {
+                    document.body.innerHTML = `<pre>{"error": "${error.message}"}</pre>`;
+                }
+            }
         });
+
+        // Logs
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                error: 'text-red-400'
+            };
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `${colors[type]} flex gap-2`;
+            logEntry.innerHTML = `<span class="text-gray-600">[${timestamp}]</span> ${message}`;
+            
+            logsDiv.insertBefore(logEntry, logsDiv.firstChild);
+            
+            // Garder seulement les 20 derniers logs
+            while (logsDiv.children.length > 20) {
+                logsDiv.removeChild(logsDiv.lastChild);
+            }
+        }
+
+        // Afficher/masquer le body selon l'endpoint
+        document.getElementById('endpoint').addEventListener('change', (e) => {
+            const isPost = e.target.value.includes('POST');
+            document.getElementById('body-section').classList.toggle('hidden', !isPost);
+        });
+
+        // Log initial
+        log('🚀 API Client-Side initialisée', 'success');
+        log(`Session ID: ${API_DATA.sessionId}`, 'info');
     </script>
 </body>
 </html>
