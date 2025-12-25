@@ -24,12 +24,11 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-8">
     <div class="max-w-4xl mx-auto space-y-6">
-        <!-- Header -->
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 rounded-2xl shadow-2xl">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-4xl font-black mb-2">Client-Side REST API</h1>
-                    <p class="text-blue-100">Expérience : API REST dans le navigateur</p>
+                    <p class="text-blue-100">Orchestrateur API dans le navigateur</p>
                 </div>
                 <div class="text-right">
                     <div class="flex items-center gap-2 text-sm font-bold">
@@ -41,7 +40,6 @@
             </div>
         </div>
 
-        <!-- API Info -->
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                 📡 Endpoints disponibles
@@ -50,7 +48,7 @@
                 <div class="bg-green-900/30 border border-green-700 p-3 rounded">
                     <span class="text-green-400 font-bold">GET</span> 
                     <span class="text-gray-300">/api/status</span>
-                    <span class="text-gray-500 ml-4">→ État du serveur</span>
+                    <span class="text-gray-500 ml-4">→ État du serveur simulé</span>
                 </div>
                 <div class="bg-blue-900/30 border border-blue-700 p-3 rounded">
                     <span class="text-blue-400 font-bold">POST</span> 
@@ -60,17 +58,11 @@
                 <div class="bg-green-900/30 border border-green-700 p-3 rounded">
                     <span class="text-green-400 font-bold">GET</span> 
                     <span class="text-gray-300">/api/data</span>
-                    <span class="text-gray-500 ml-4">→ Liste des données</span>
-                </div>
-                <div class="bg-purple-900/30 border border-purple-700 p-3 rounded">
-                    <span class="text-purple-400 font-bold">PUT</span> 
-                    <span class="text-gray-300">/api/data/:id</span>
-                    <span class="text-gray-500 ml-4">→ Mise à jour</span>
+                    <span class="text-gray-500 ml-4">→ Simulation base de données</span>
                 </div>
             </div>
         </div>
 
-        <!-- Test Interface -->
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h2 class="text-xl font-bold mb-4">🧪 Interface de Test</h2>
             
@@ -78,300 +70,196 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-400 mb-2">Endpoint</label>
                     <select id="endpoint" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white">
-                        <option value="/api/status">GET /api/status</option>
-                        <option value="/api/data">GET /api/data</option>
-                        <option value="/api/process">POST /api/process</option>
+                        <option value="GET /api/status">GET /api/status</option>
+                        <option value="GET /api/data">GET /api/data</option>
+                        <option value="POST /api/process">POST /api/process</option>
                     </select>
                 </div>
 
                 <div id="body-section" class="hidden">
                     <label class="block text-sm font-bold text-gray-400 mb-2">Body (JSON)</label>
-                    <textarea id="request-body" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white mono text-sm" placeholder='{"text": "Votre texte ici"}'></textarea>
+                    <textarea id="request-body" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white mono text-sm" placeholder='{"text": "Hello World"}'></textarea>
                 </div>
 
-                <button onclick="testAPI()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all">
+                <button onclick="testAPI()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">
                     Envoyer la Requête
                 </button>
 
                 <div id="response-section" class="hidden">
-                    <h3 class="text-sm font-bold text-gray-400 mb-2">Réponse :</h3>
-                    <pre id="response-output" class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm mono overflow-x-auto"></pre>
+                    <h3 class="text-sm font-bold text-gray-400 mb-2">Réponse du "Serveur" :</h3>
+                    <pre id="response-output" class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm mono overflow-x-auto text-green-400"></pre>
                 </div>
             </div>
         </div>
 
-        <!-- Logs en temps réel -->
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h2 class="text-xl font-bold mb-4">📊 Logs API (Temps Réel)</h2>
-            <div id="logs" class="space-y-2 max-h-64 overflow-y-auto text-sm mono"></div>
-        </div>
-
-        <!-- Instructions pour Python -->
-        <div class="bg-yellow-900/20 border border-yellow-700 p-6 rounded-xl">
-            <h3 class="text-lg font-bold text-yellow-400 mb-3">🐍 Test depuis Python/Colab</h3>
-            <p class="text-sm text-gray-300 mb-3">Une fois cette page déployée, utilisez ce code Python :</p>
-            <pre class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-xs mono overflow-x-auto text-green-400">import requests
-import json
-
-# URL de ton HTML déployé (GitHub Pages / Vercel)
-base_url = "https://your-username.github.io/api-client.html"
-
-# Test 1: GET status
-response = requests.get(f"{base_url}?endpoint=/api/status")
-print("Status:", response.json())
-
-# Test 2: POST process
-response = requests.post(
-    f"{base_url}?endpoint=/api/process",
-    json={"text": "Hello from Python!"}
-)
-print("Result:", response.json())</pre>
+            <div id="logs" class="space-y-2 max-h-64 overflow-y-auto text-sm mono font-medium"></div>
         </div>
     </div>
 
     <script>
-        // ========== API REST CÔTÉ CLIENT ==========
+        // ========== API REST CÔTÉ CLIENT (CORRIGÉE) ==========
         
-        const API_DATA = {
-            sessionId: 'session-' + Math.random().toString(36).substr(2, 9),
+        // 1. État global (Simulation de Database)
+        const API_STATE = {
+            sessionId: 'sess_' + Math.random().toString(36).substr(2, 9),
             startTime: Date.now(),
-            storage: [],
+            db: [
+                { id: 1, name: "Donnée Initiale", value: 42 }
+            ],
             requestCount: 0
         };
 
-        document.getElementById('session-id').textContent = `Session: ${API_DATA.sessionId}`;
+        document.getElementById('session-id').textContent = `Session: ${API_STATE.sessionId}`;
 
-        // Service Worker pour intercepter les fetch
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(createServiceWorkerBlob()).then(reg => {
-                log('✅ Service Worker installé', 'success');
-            }).catch(err => {
-                log('❌ Service Worker failed: ' + err.message, 'error');
-            });
-        }
+        // 2. Le "Routeur" (Cerveau de l'API)
+        // C'est cette fonction qui remplace le serveur backend
+        async function router(method, path, body = null) {
+            API_STATE.requestCount++;
+            
+            // Simulation de latence réseau (optionnel, pour faire vrai)
+            await new Promise(r => setTimeout(r, 300));
 
-        function createServiceWorkerBlob() {
-            const swCode = `
-                self.addEventListener('install', (event) => {
-                    self.skipWaiting();
-                });
-
-                self.addEventListener('activate', (event) => {
-                    event.waitUntil(self.clients.claim());
-                });
-
-                self.addEventListener('fetch', (event) => {
-                    const url = new URL(event.request.url);
-                    
-                    // Intercepter uniquement les requêtes /api/*
-                    if (url.pathname.startsWith('/api/')) {
-                        event.respondWith(handleAPIRequest(event.request));
+            // --- ROUTE: GET /api/status ---
+            if (method === 'GET' && path === '/api/status') {
+                return {
+                    status: 200,
+                    data: {
+                        online: true,
+                        uptime: `${Math.floor((Date.now() - API_STATE.startTime) / 1000)}s`,
+                        requests_handled: API_STATE.requestCount,
+                        session: API_STATE.sessionId
                     }
-                });
+                };
+            }
 
-                async function handleAPIRequest(request) {
-                    const url = new URL(request.url);
-                    const path = url.pathname;
-                    const method = request.method;
-
-                    let responseData;
-                    let status = 200;
-
-                    try {
-                        if (method === 'GET' && path === '/api/status') {
-                            responseData = {
-                                status: 'online',
-                                message: 'API Client-Side active',
-                                uptime: Date.now() - ${API_DATA.startTime},
-                                sessionId: '${API_DATA.sessionId}',
-                                timestamp: new Date().toISOString()
-                            };
-                        }
-                        else if (method === 'GET' && path === '/api/data') {
-                            responseData = {
-                                data: [],
-                                count: 0,
-                                message: 'Liste des données'
-                            };
-                        }
-                        else if (method === 'POST' && path === '/api/process') {
-                            const body = await request.json();
-                            const text = body.text || '';
-                            
-                            responseData = {
-                                original: text,
-                                processed: {
-                                    uppercase: text.toUpperCase(),
-                                    lowercase: text.toLowerCase(),
-                                    reversed: text.split('').reverse().join(''),
-                                    length: text.length,
-                                    words: text.split(' ').length
-                                },
-                                timestamp: new Date().toISOString()
-                            };
-                        }
-                        else {
-                            status = 404;
-                            responseData = { error: 'Endpoint not found' };
-                        }
-                    } catch (error) {
-                        status = 500;
-                        responseData = { error: error.message };
+            // --- ROUTE: GET /api/data ---
+            if (method === 'GET' && path === '/api/data') {
+                return {
+                    status: 200,
+                    data: {
+                        count: API_STATE.db.length,
+                        items: API_STATE.db
                     }
+                };
+            }
 
-                    return new Response(JSON.stringify(responseData), {
-                        status: status,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        }
-                    });
+            // --- ROUTE: POST /api/process ---
+            if (method === 'POST' && path === '/api/process') {
+                if (!body || !body.text) {
+                    return { status: 400, data: { error: "Champ 'text' requis dans le body" } };
                 }
-            `;
-
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            return URL.createObjectURL(blob);
-        }
-
-        // Simulateur d'API sans Service Worker (fallback)
-        async function handleLocalAPI(endpoint, method = 'GET', body = null) {
-            API_DATA.requestCount++;
-            log(`${method} ${endpoint}`, 'info');
-
-            let response;
-
-            if (method === 'GET' && endpoint === '/api/status') {
-                response = {
-                    status: 'online',
-                    message: 'API Client-Side active (Fallback mode)',
-                    uptime: Date.now() - API_DATA.startTime,
-                    sessionId: API_DATA.sessionId,
-                    requestCount: API_DATA.requestCount,
-                    timestamp: new Date().toISOString()
-                };
-            }
-            else if (method === 'GET' && endpoint === '/api/data') {
-                response = {
-                    data: API_DATA.storage,
-                    count: API_DATA.storage.length,
-                    message: 'Liste des données'
-                };
-            }
-            else if (method === 'POST' && endpoint === '/api/process') {
-                const text = body.text || '';
-                response = {
+                
+                const text = body.text;
+                // Logique métier "Complexe"
+                const result = {
                     original: text,
-                    processed: {
+                    transformations: {
                         uppercase: text.toUpperCase(),
-                        lowercase: text.toLowerCase(),
-                        reversed: text.split('').reverse().join(''),
-                        length: text.length,
-                        words: text.split(' ').length,
-                        vowels: (text.match(/[aeiou]/gi) || []).length
+                        reverse: text.split('').reverse().join(''),
+                        length: text.length
                     },
-                    timestamp: new Date().toISOString()
+                    processed_at: new Date().toISOString()
                 };
-            }
-            else if (method === 'PUT' && endpoint.startsWith('/api/data/')) {
-                const id = endpoint.split('/').pop();
-                response = {
-                    message: `Updated item ${id}`,
-                    data: body
-                };
-            }
-            else {
-                throw new Error('Endpoint not found');
+
+                return { status: 201, data: result };
             }
 
-            log(`✓ Response: ${JSON.stringify(response).substr(0, 50)}...`, 'success');
-            return response;
+            // --- 404 NOT FOUND ---
+            return {
+                status: 404,
+                data: { error: `Endpoint inconnu: ${method} ${path}` }
+            };
         }
 
-        // Test depuis l'interface
+        // 3. Fonction Client (Celle qui est appelée par le bouton)
         async function testAPI() {
-            const endpoint = document.getElementById('endpoint').value;
-            const method = endpoint.includes('POST') ? 'POST' : endpoint.includes('PUT') ? 'PUT' : 'GET';
-            const path = endpoint.split(' ')[1];
+            const endpointSelect = document.getElementById('endpoint').value;
+            // CORRECTION: Le split fonctionne maintenant car j'ai mis "METHOD PATH" dans les values du select
+            const [method, path] = endpointSelect.split(' '); 
 
             let body = null;
-            if (method === 'POST' || method === 'PUT') {
-                const bodyText = document.getElementById('request-body').value;
+            
+            // Gestion du Body pour POST/PUT
+            if (['POST', 'PUT'].includes(method)) {
                 try {
-                    body = bodyText ? JSON.parse(bodyText) : {};
+                    const rawBody = document.getElementById('request-body').value;
+                    if(rawBody) body = JSON.parse(rawBody);
                 } catch (e) {
-                    log('❌ Invalid JSON', 'error');
+                    log('❌ JSON invalide dans le body', 'error');
                     return;
                 }
             }
 
+            log(`🚀 Envoi: ${method} ${path}`, 'info');
+
             try {
-                const result = await handleLocalAPI(path, method, body);
-                document.getElementById('response-section').classList.remove('hidden');
-                document.getElementById('response-output').textContent = JSON.stringify(result, null, 2);
-            } catch (error) {
-                log(`❌ Error: ${error.message}`, 'error');
-            }
-        }
+                // Appel au routeur (simulation de fetch)
+                const response = await router(method, path, body);
 
-        // Gestion des query params pour Python
-        window.addEventListener('load', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const endpoint = params.get('endpoint');
-            const bodyParam = params.get('body');
-
-            if (endpoint) {
-                log(`📡 Requête externe détectée: ${endpoint}`, 'info');
+                // Affichage du résultat
+                const output = document.getElementById('response-output');
+                const section = document.getElementById('response-section');
                 
-                try {
-                    let body = null;
-                    if (bodyParam) {
-                        body = JSON.parse(decodeURIComponent(bodyParam));
-                    }
+                section.classList.remove('hidden');
+                output.textContent = JSON.stringify(response.data, null, 2);
 
-                    const method = params.get('method') || 'GET';
-                    const result = await handleLocalAPI(endpoint, method, body);
-                    
-                    // Retourner la réponse
-                    document.body.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
-                } catch (error) {
-                    document.body.innerHTML = `<pre>{"error": "${error.message}"}</pre>`;
+                if (response.status >= 200 && response.status < 300) {
+                    log(`✅ ${response.status} OK`, 'success');
+                } else {
+                    log(`⚠️ ${response.status} Error`, 'error');
                 }
-            }
-        });
 
-        // Logs
-        function log(message, type = 'info') {
-            const logsDiv = document.getElementById('logs');
-            const timestamp = new Date().toLocaleTimeString();
-            const colors = {
-                info: 'text-blue-400',
-                success: 'text-green-400',
-                error: 'text-red-400'
-            };
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = `${colors[type]} flex gap-2`;
-            logEntry.innerHTML = `<span class="text-gray-600">[${timestamp}]</span> ${message}`;
-            
-            logsDiv.insertBefore(logEntry, logsDiv.firstChild);
-            
-            // Garder seulement les 20 derniers logs
-            while (logsDiv.children.length > 20) {
-                logsDiv.removeChild(logsDiv.lastChild);
+            } catch (err) {
+                log(`💥 Erreur Critique: ${err.message}`, 'error');
             }
         }
 
-        // Afficher/masquer le body selon l'endpoint
+        // 4. Système de Logs UI
+        function log(msg, type) {
+            const logsDiv = document.getElementById('logs');
+            const time = new Date().toLocaleTimeString();
+            
+            const el = document.createElement('div');
+            // Couleurs Tailwind dynamiques
+            let color = 'text-gray-300';
+            if (type === 'info') color = 'text-blue-400';
+            if (type === 'success') color = 'text-green-400';
+            if (type === 'error') color = 'text-red-400';
+
+            el.className = `${color} border-l-2 border-opacity-30 pl-2 border-gray-500`;
+            el.innerHTML = `<span class="text-xs text-gray-500 font-mono mr-2">[${time}]</span>${msg}`;
+            
+            logsDiv.prepend(el);
+        }
+
+        // 5. UX : Afficher/Masquer le champ Body
         document.getElementById('endpoint').addEventListener('change', (e) => {
             const isPost = e.target.value.includes('POST');
             document.getElementById('body-section').classList.toggle('hidden', !isPost);
         });
 
-        // Log initial
-        log('🚀 API Client-Side initialisée', 'success');
-        log(`Session ID: ${API_DATA.sessionId}`, 'info');
+        // 6. Support URL Params (Pour automatisation externe basique)
+        // Permet d'ouvrir index.html?endpoint=/api/status et de voir le JSON
+        window.addEventListener('load', async () => {
+            log('Système initialisé. Prêt à orchestrer.', 'success');
+
+            const params = new URLSearchParams(window.location.search);
+            const autoEndpoint = params.get('endpoint'); // ex: /api/status
+            
+            if (autoEndpoint) {
+                log(`🤖 Automatisation détectée: ${autoEndpoint}`, 'info');
+                const method = params.get('method') || 'GET';
+                const body = params.get('body') ? JSON.parse(params.get('body')) : null;
+
+                const response = await router(method, autoEndpoint, body);
+                
+                // Remplacer toute la page par le JSON (pour être lu par un script externe)
+                document.body.innerHTML = `<pre style="color:white; background:black; padding:20px;">${JSON.stringify(response.data, null, 2)}</pre>`;
+            }
+        });
+
     </script>
 </body>
 </html>
