@@ -1,25 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSOP Test - Fixed Version</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+            background: #0f172a;
+            color: white;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e293b;
+            border-radius: 8px;
+            min-height: 50px;
+            font-family: monospace;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
 <body>
-    <button onclick="test()">Test CSOP</button>
+    <h1>🚀 CSOP v0.1.0 Test</h1>
+    <p>Click the button to test CSOP</p>
     
+    <button onclick="testCSOP()">Test CSOP</button>
+    
+    <div id="status" class="info">Ready to test...</div>
+
     <script type="module">
         import { CSOP } from 'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/csop@v0.1.0/src/csop.js';
         
-        const csop = new CSOP();
-        await csop.init();
-        
-        window.test = async () => {
-            await csop.dispatch('storage.save', {
-                key: 'test',
-                data: { works: true }
-            });
-            
-            const result = await csop.dispatch('storage.get', {
-                key: 'test'
-            });
-            
-            alert(JSON.stringify(result.data));
+        const statusDiv = document.getElementById('status');
+        let csop;
+
+        // Initialize CSOP in an async function
+        (async function initCSOP() {
+            try {
+                statusDiv.textContent = '⏳ Initializing CSOP...';
+                statusDiv.className = 'info';
+                
+                csop = new CSOP();
+                await csop.init();
+                
+                statusDiv.textContent = '✅ CSOP Ready! Click "Test CSOP" button.';
+                statusDiv.className = 'success';
+                
+                console.log('CSOP initialized:', csop.info());
+            } catch (error) {
+                statusDiv.textContent = `❌ Init Error: ${error.message}`;
+                statusDiv.className = 'error';
+                console.error('CSOP init failed:', error);
+            }
+        })();
+
+        // Test function
+        window.testCSOP = async function() {
+            if (!csop) {
+                statusDiv.textContent = '❌ CSOP not initialized yet. Wait a moment and try again.';
+                statusDiv.className = 'error';
+                return;
+            }
+
+            try {
+                statusDiv.textContent = '⏳ Testing storage.save...';
+                statusDiv.className = 'info';
+                
+                // Save data
+                const saveResult = await csop.dispatch('storage.save', {
+                    key: 'test',
+                    data: { works: true, timestamp: Date.now() }
+                });
+                
+                console.log('Save result:', saveResult);
+                
+                statusDiv.textContent = '⏳ Testing storage.get...';
+                
+                // Get data
+                const getResult = await csop.dispatch('storage.get', {
+                    key: 'test'
+                });
+                
+                console.log('Get result:', getResult);
+                
+                // Display success
+                statusDiv.innerHTML = `
+                    <div class="success">✅ CSOP Works!</div>
+                    <div style="margin-top: 10px; font-size: 14px;">
+                        Saved: ${JSON.stringify(saveResult.data)}<br>
+                        Retrieved: ${JSON.stringify(getResult.data)}
+                    </div>
+                `;
+                statusDiv.className = 'success';
+                
+                // Also show alert
+                alert(`✅ Success!\n\nData: ${JSON.stringify(getResult.data, null, 2)}`);
+                
+            } catch (error) {
+                statusDiv.textContent = `❌ Test Error: ${error.message}`;
+                statusDiv.className = 'error';
+                console.error('CSOP test failed:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
         }
     </script>
 </body>
