@@ -1,39 +1,233 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>FrontendRAFT Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test FrontendRAFT</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .status.ready {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    pre {
+      background: #2d3748;
+      color: #68d391;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .error-details {
+      background: #fff;
+      border: 2px solid #f8d7da;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>FrontendRAFT Test</h1>
-  <div id="status">Initializing...</div>
-  <button onclick="testAPI()">Test API</button>
+  <h1>Test FrontendRAFT</h1>
+  
+  <div id="status" class="status loading">
+    Initialisation...
+  </div>
+
+  <div id="error-container"></div>
+
+  <button id="testBtn" onclick="testAPI()" disabled>
+    Tester l'API
+  </button>
+
+  <button onclick="testStorage()" disabled id="storageBtn">
+    Test Storage
+  </button>
+
+  <button onclick="showMetadata()" disabled id="metaBtn">
+    Afficher Metadata
+  </button>
+
   <pre id="output"></pre>
 
   <script type="module">
-    import { FrontendRAFT } from 'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/cdn/v0.1.0/frontendraft.mjs';
-    
-    const raft = new FrontendRAFT({
-      name: "Test API"
-    });
+    let raft;
 
-    await raft.init();
-    document.getElementById('status').textContent = '✅ Ready!';
+    function updateStatus(message, type = 'loading') {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+    }
 
-    // Define API endpoint
-    raft.get('/hello', async (req) => {
-      return { message: 'Hello from FrontendRAFT!', timestamp: Date.now() };
-    });
+    function showError(error) {
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.innerHTML = `
+        <div class="error-details">
+          <h3>❌ Erreur détectée</h3>
+          <p><strong>Message:</strong> ${error.message}</p>
+          <p><strong>Stack:</strong></p>
+          <pre>${error.stack || 'Non disponible'}</pre>
+        </div>
+      `;
+    }
+
+    function enableButtons() {
+      document.getElementById('testBtn').disabled = false;
+      document.getElementById('storageBtn').disabled = false;
+      document.getElementById('metaBtn').disabled = false;
+    }
+
+    async function init() {
+      try {
+        updateStatus('🔄 Chargement de FrontendRAFT...', 'loading');
+
+        // Import avec URL complète et gestion d'erreur
+        const { FrontendRAFT } = await import('https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/cdn/v0.1.0/frontendraft.mjs');
+        
+        updateStatus('🔄 Création instance RAFT...', 'loading');
+
+        raft = new FrontendRAFT({
+          name: "API de test",
+          autoRegister: false  // Désactiver pour test local
+        });
+
+        updateStatus('🔄 Initialisation RAFT...', 'loading');
+
+        await raft.init();
+
+        updateStatus('✅ FrontendRAFT prêt !', 'ready');
+
+        // Définir un endpoint de test
+        raft.get('/hello', async (req) => {
+          return { 
+            message: 'Hello from FrontendRAFT!', 
+            timestamp: Date.now(),
+            headers: req.headers 
+          };
+        });
+
+        raft.get('/users', async (req) => {
+          return {
+            users: [
+              { id: 1, name: 'Alice' },
+              { id: 2, name: 'Bob' }
+            ]
+          };
+        });
+
+        // Exposer globalement
+        window.raft = raft;
+
+        // Activer les boutons
+        enableButtons();
+
+        // Afficher metadata
+        const metadata = raft.getMetadata();
+        document.getElementById('output').textContent = 
+          '📦 Metadata:\n' + JSON.stringify(metadata, null, 2);
+
+      } catch (error) {
+        console.error('Erreur d\'initialisation:', error);
+        updateStatus('❌ Erreur d\'initialisation', 'error');
+        showError(error);
+
+        // Afficher l'erreur dans l'output aussi
+        document.getElementById('output').textContent = 
+          'ERREUR:\n' + error.message + '\n\n' + error.stack;
+      }
+    }
 
     window.testAPI = async function() {
-      const result = await raft.router.handle({
-        method: 'GET',
-        path: '/hello',
-        headers: {}
-      });
-      
-      document.getElementById('output').textContent = 
-        JSON.stringify(result, null, 2);
+      try {
+        const output = document.getElementById('output');
+        output.textContent = '🔄 Test en cours...';
+
+        const result = await raft.router.handle({
+          method: 'GET',
+          path: '/hello',
+          headers: {}
+        });
+
+        output.textContent = '✅ Résultat:\n' + JSON.stringify(result, null, 2);
+      } catch (error) {
+        document.getElementById('output').textContent = 
+          '❌ Erreur:\n' + error.message;
+      }
     };
+
+    window.testStorage = async function() {
+      try {
+        const output = document.getElementById('output');
+        output.textContent = '🔄 Test storage...';
+
+        // Sauvegarder
+        await raft.storage.save('test-key', { 
+          message: 'Hello Storage!', 
+          timestamp: Date.now() 
+        });
+
+        // Récupérer
+        const data = await raft.storage.get('test-key');
+
+        output.textContent = '✅ Storage OK:\n' + JSON.stringify(data, null, 2);
+      } catch (error) {
+        document.getElementById('output').textContent = 
+          '❌ Erreur storage:\n' + error.message;
+      }
+    };
+
+    window.showMetadata = function() {
+      const metadata = raft.getMetadata();
+      document.getElementById('output').textContent = 
+        '📦 Metadata API:\n' + JSON.stringify(metadata, null, 2);
+    };
+
+    // Démarrer l'initialisation
+    init();
   </script>
 </body>
 </html>
