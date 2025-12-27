@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>FrontendRAFT Test</title>
+</head>
 <body>
-    <button onclick="test()">Test CSOP</button>
+  <h1>FrontendRAFT Test</h1>
+  <div id="status">Initializing...</div>
+  <button onclick="testAPI()">Test API</button>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { FrontendRAFT } from 'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/cdn/v0.1.0/frontendraft.mjs';
     
-    <script type="module">
-        import { CSOP } from 'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/csop@v0.1.0/src/csop.js';
-        
-        const csop = new CSOP();
-        await csop.init();
-        
-        window.test = async () => {
-            await csop.dispatch('storage.save', {
-                key: 'test',
-                data: { works: true }
-            });
-            
-            const result = await csop.dispatch('storage.get', {
-                key: 'test'
-            });
-            
-            alert(JSON.stringify(result.data));
-        }
-    </script>
+    const raft = new FrontendRAFT({
+      name: "Test API"
+    });
+
+    await raft.init();
+    document.getElementById('status').textContent = '✅ Ready!';
+
+    // Define API endpoint
+    raft.get('/hello', async (req) => {
+      return { message: 'Hello from FrontendRAFT!', timestamp: Date.now() };
+    });
+
+    window.testAPI = async function() {
+      const result = await raft.router.handle({
+        method: 'GET',
+        path: '/hello',
+        headers: {}
+      });
+      
+      document.getElementById('output').textContent = 
+        JSON.stringify(result, null, 2);
+    };
+  </script>
 </body>
 </html>
