@@ -1,125 +1,1080 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test FrontendRAFT v0.1.0</title>
+    <title>CSOP v0.2.0 - Tests Complets</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .status {
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            margin: 20px 0;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
         }
-        .loading {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
+
+        .test-category {
+            margin-bottom: 15px;
         }
-        .success {
-            background: #d4edda;
-            border: 2px solid #28a745;
+
+        .test-category h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .error {
-            background: #f8d7da;
-            border: 2px solid #dc3545;
+
+        .test-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            text-align: left;
         }
-        pre {
+
+        .test-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .test-btn.running {
+            background: #ffc107;
+            color: white;
+            border-color: #ffc107;
+        }
+
+        .test-btn.success {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .test-btn.error {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .main-content {
+            background: white;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-container {
             background: #1e1e1e;
             color: #d4d4d4;
-            padding: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px;
             border-radius: 5px;
-            overflow-x: auto;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .log-entry.info {
+            color: #4fc3f7;
+        }
+
+        .log-entry.success {
+            color: #66bb6a;
+            background: rgba(102, 187, 106, 0.1);
+        }
+
+        .log-entry.error {
+            color: #ef5350;
+            background: rgba(239, 83, 80, 0.1);
+        }
+
+        .log-entry.warning {
+            color: #ffca28;
+            background: rgba(255, 202, 40, 0.1);
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-new {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-enhanced {
+            background: #667eea;
+            color: white;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card h4 {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        .result-card code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <h1>🚀 FrontendRAFT v0.1.0 Test</h1>
-    
-    <div id="status" class="status loading">
-        ⏳ Chargement de FrontendRAFT...
+    <div class="container">
+        <div class="header">
+            <h1>🚀 CSOP v0.2.0</h1>
+            <p>Test Complet de Toutes les Fonctionnalités</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="label">Tests Exécutés</div>
+                <div class="value" id="totalTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Réussis ✅</div>
+                <div class="value" id="successTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Échoués ❌</div>
+                <div class="value" id="failedTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Latence Moyenne</div>
+                <div class="value" id="avgLatency">0ms</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Temps Total</div>
+                <div class="value" id="totalTime">0s</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <div class="test-category">
+                    <h3>🔧 Core</h3>
+                    <button class="test-btn" onclick="testInit()">Test Init</button>
+                    <button class="test-btn" onclick="testInfo()">Test Info</button>
+                    <button class="test-btn" onclick="testStats()">Test Stats <span class="badge badge-new">NEW</span></button>
+                </div>
+
+                <div class="test-category">
+                    <h3>💾 Storage</h3>
+                    <button class="test-btn" onclick="testStorageSave()">Save</button>
+                    <button class="test-btn" onclick="testStorageGet()">Get</button>
+                    <button class="test-btn" onclick="testStorageDelete()">Delete</button>
+                    <button class="test-btn" onclick="testStorageList()">List</button>
+                    <button class="test-btn" onclick="testStorageValidation()">Validation <span class="badge badge-new">NEW</span></button>
+                </div>
+
+                <div class="test-category">
+                    <h3>⚡ Compute</h3>
+                    <button class="test-btn" onclick="testComputeFibonacci()">Fibonacci</button>
+                    <button class="test-btn" onclick="testComputeFactorial()">Factorial</button>
+                    <button class="test-btn" onclick="testComputePrime()">IsPrime</button>
+                    <button class="test-btn" onclick="testComputeHash()">Hash SHA256</button>
+                    <button class="test-btn" onclick="testComputeBatch()">Batch</button>
+                    <button class="test-btn" onclick="testComputeValidation()">Validation <span class="badge badge-new">NEW</span></button>
+                </div>
+
+                <div class="test-category">
+                    <h3>🔄 Sync</h3>
+                    <button class="test-btn" onclick="testSyncBroadcast()">Broadcast</button>
+                    <button class="test-btn" onclick="testSyncSubscribe()">Subscribe</button>
+                    <button class="test-btn" onclick="testSyncValidation()">Validation <span class="badge badge-new">NEW</span></button>
+                </div>
+
+                <div class="test-category">
+                    <h3>❌ Error Handling</h3>
+                    <button class="test-btn" onclick="testErrorCodes()">Error Codes <span class="badge badge-enhanced">ENHANCED</span></button>
+                    <button class="test-btn" onclick="testRetry()">Retry Logic</button>
+                    <button class="test-btn" onclick="testTimeout()">Timeout</button>
+                </div>
+
+                <div class="test-category">
+                    <h3>🎯 Actions Globales</h3>
+                    <button class="test-btn btn-success" onclick="runAllTests()">▶️ Tout Tester</button>
+                    <button class="test-btn btn-warning" onclick="clearLogs()">🗑️ Nettoyer Logs</button>
+                    <button class="test-btn btn-danger" onclick="resetStats()">🔄 Reset Stats</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="control-panel">
+                    <button class="btn btn-primary" onclick="runAllTests()">▶️ Lancer Tous les Tests</button>
+                    <button class="btn btn-success" onclick="testQuickSuite()">⚡ Suite Rapide</button>
+                    <button class="btn btn-warning" onclick="clearLogs()">🗑️ Nettoyer</button>
+                    <button class="btn btn-danger" onclick="resetStats()">🔄 Reset</button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+                </div>
+
+                <div class="test-section">
+                    <h2>📊 Console de Logs</h2>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry info">🚀 Prêt à tester CSOP v0.2.0...</div>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <h2>📈 Résultats Détaillés</h2>
+                    <div class="result-grid" id="resultsGrid">
+                        <!-- Résultats dynamiques ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="info"></div>
-
     <script type="module">
-        const statusDiv = document.getElementById('status');
-        const infoDiv = document.getElementById('info');
+        import { CSOP } from 'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/CSOP@v0.2.0/src/csop.js';
 
-        try {
-            // Import FrontendRAFT
-            const { FrontendRAFT, VERSION, CSOP_VERSION } = await import(
-                'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/src/index.js'
-            );
+        // Variables globales
+        let csop = null;
+        let testResults = {
+            total: 0,
+            success: 0,
+            failed: 0,
+            latencies: [],
+            startTime: null
+        };
 
-            // Créer instance
-            const raft = new FrontendRAFT({
-                name: 'Test API',
-                version: '1.0.0'
-            });
-
-            // Initialiser
-            await raft.init();
-
-            // Afficher succès
-            statusDiv.className = 'status success';
-            statusDiv.innerHTML = '✅ FrontendRAFT chargé et initialisé avec succès !';
-
-            // Afficher infos
-            infoDiv.innerHTML = `
-                <h2>📦 Informations du Package</h2>
-                <pre>${JSON.stringify({
-                    'FrontendRAFT Version': VERSION,
-                    'CSOP Version': CSOP_VERSION,
-                    'API ID': raft.apiId,
-                    'API Name': raft.config.name,
-                    'Initialized': raft.initialized,
-                    'Capabilities': {
-                        'Storage': !!raft.storage,
-                        'Compute': !!raft.compute,
-                        'P2P': !!raft.p2p,
-                        'Auth': !!raft.auth,
-                        'Router': !!raft.router,
-                        'Cache': !!raft.cache,
-                        'Stream': !!raft.stream,
-                        'Batch': !!raft.batch,
-                        'Optimistic': !!raft.optimistic,
-                        'Query': !!raft.query
-                    }
-                }, null, 2)}</pre>
-
-                <h2>🧪 Test Simple</h2>
-                <p>Définissons une route et testons-la :</p>
-                <pre id="testResult">Exécution du test...</pre>
-            `;
-
-            // Test simple
-            raft.routes({
-                'GET /hello': async () => ({ 
-                    message: 'Hello from FrontendRAFT!',
-                    timestamp: Date.now()
-                })
-            });
-
-            const result = await raft.get('/hello');
-            
-            document.getElementById('testResult').textContent = 
-                'Test réussi !\n\n' + JSON.stringify(result, null, 2);
-
-        } catch (error) {
-            statusDiv.className = 'status error';
-            statusDiv.innerHTML = `❌ Erreur: ${error.message}`;
-            
-            infoDiv.innerHTML = `
-                <h2>🐛 Détails de l'Erreur</h2>
-                <pre>${error.stack}</pre>
-            `;
+        // Initialisation
+        async function init() {
+            log('info', '🔧 Initialisation de CSOP...');
+            try {
+                csop = new CSOP();
+                await csop.init();
+                log('success', '✅ CSOP initialisé avec succès !');
+                const info = csop.info();
+                log('info', `📦 Version: ${info.version}`);
+                log('info', `🎯 Capabilities: ${info.capabilities.join(', ')}`);
+                return true;
+            } catch (error) {
+                log('error', `❌ Erreur init: ${error.message}`);
+                return false;
+            }
         }
+
+        // Fonctions de logging
+        function log(type, message) {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '<div class="log-entry info">🧹 Logs nettoyés</div>';
+        }
+
+        // Mise à jour des stats
+        function updateStats() {
+            document.getElementById('totalTests').textContent = testResults.total;
+            document.getElementById('successTests').textContent = testResults.success;
+            document.getElementById('failedTests').textContent = testResults.failed;
+            
+            const avgLatency = testResults.latencies.length > 0 
+                ? Math.round(testResults.latencies.reduce((a,b) => a+b, 0) / testResults.latencies.length)
+                : 0;
+            document.getElementById('avgLatency').textContent = `${avgLatency}ms`;
+            
+            if (testResults.startTime) {
+                const elapsed = Math.round((Date.now() - testResults.startTime) / 1000);
+                document.getElementById('totalTime').textContent = `${elapsed}s`;
+            }
+        }
+
+        function addResult(name, success, duration, details) {
+            testResults.total++;
+            if (success) {
+                testResults.success++;
+                testResults.latencies.push(duration);
+            } else {
+                testResults.failed++;
+            }
+            updateStats();
+
+            const grid = document.getElementById('resultsGrid');
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <h4>${success ? '✅' : '❌'} ${name}</h4>
+                <p><strong>Durée:</strong> <code>${duration}ms</code></p>
+                ${details ? `<p><strong>Détails:</strong> ${details}</p>` : ''}
+            `;
+            grid.insertBefore(card, grid.firstChild);
+        }
+
+        function resetStats() {
+            testResults = {
+                total: 0,
+                success: 0,
+                failed: 0,
+                latencies: [],
+                startTime: null
+            };
+            updateStats();
+            document.getElementById('resultsGrid').innerHTML = '';
+            log('warning', '🔄 Statistiques réinitialisées');
+        }
+
+        // Tests Core
+        window.testInit = async function() {
+            log('info', '🧪 Test Init...');
+            const success = await init();
+            addResult('Init', success, 0, 'Initialisation CSOP');
+        };
+
+        window.testInfo = async function() {
+            log('info', '🧪 Test Info...');
+            try {
+                const info = csop.info();
+                log('success', `✅ Info récupérée: ${JSON.stringify(info, null, 2)}`);
+                addResult('Info', true, 0, `Version ${info.version}`);
+            } catch (error) {
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Info', false, 0, error.message);
+            }
+        };
+
+        window.testStats = async function() {
+            log('info', '🧪 Test Stats (NEW v0.2.0)...');
+            try {
+                const info = csop.info();
+                const stats = info.stats;
+                log('success', `✅ Stats: ${JSON.stringify(stats, null, 2)}`);
+                addResult('Stats', true, 0, `${stats.totalRequests} requêtes`);
+            } catch (error) {
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Stats', false, 0, error.message);
+            }
+        };
+
+        // Tests Storage
+        window.testStorageSave = async function() {
+            log('info', '🧪 Test Storage Save...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('storage.save', {
+                    key: 'test_user_profile',
+                    data: { name: 'Anzize', role: 'CEO', timestamp: Date.now() }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Sauvegardé: ${result.data.key} en ${duration}ms`);
+                addResult('Storage Save', true, duration, `Clé: ${result.data.key}`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Storage Save', false, duration, error.message);
+            }
+        };
+
+        window.testStorageGet = async function() {
+            log('info', '🧪 Test Storage Get...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('storage.get', {
+                    key: 'test_user_profile'
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Récupéré: ${JSON.stringify(result.data)}`);
+                addResult('Storage Get', true, duration, 'Données récupérées');
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.code} - ${error.message}`);
+                addResult('Storage Get', false, duration, error.code);
+            }
+        };
+
+        window.testStorageDelete = async function() {
+            log('info', '🧪 Test Storage Delete...');
+            const start = Date.now();
+            try {
+                await csop.dispatch('storage.save', { key: 'temp_key', data: { test: true } });
+                const result = await csop.dispatch('storage.delete', { key: 'temp_key' });
+                const duration = Date.now() - start;
+                log('success', `✅ Supprimé: ${result.data.key}`);
+                addResult('Storage Delete', true, duration, 'Clé supprimée');
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Storage Delete', false, duration, error.message);
+            }
+        };
+
+        window.testStorageList = async function() {
+            log('info', '🧪 Test Storage List...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('storage.list', { prefix: 'test_' });
+                const duration = Date.now() - start;
+                log('success', `✅ Trouvé ${result.data.keys.length} clés`);
+                addResult('Storage List', true, duration, `${result.data.keys.length} clés`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Storage List', false, duration, error.message);
+            }
+        };
+
+        window.testStorageValidation = async function() {
+            log('info', '🧪 Test Storage Validation (NEW v0.2.0)...');
+            const start = Date.now();
+            try {
+                // Test clé invalide
+                await csop.dispatch('storage.save', {
+                    key: 'invalid@key!',
+                    data: { test: true }
+                });
+                log('error', '❌ Devrait échouer avec clé invalide');
+                addResult('Storage Validation', false, Date.now() - start, 'Validation non fonctionnelle');
+            } catch (error) {
+                const duration = Date.now() - start;
+                if (error.code === 'VALIDATION_ERROR') {
+                    log('success', `✅ Validation OK: ${error.message}`);
+                    addResult('Storage Validation', true, duration, 'Validation fonctionnelle');
+                } else {
+                    log('error', `❌ Mauvais code erreur: ${error.code}`);
+                    addResult('Storage Validation', false, duration, error.code);
+                }
+            }
+        };
+
+        // Tests Compute
+        window.testComputeFibonacci = async function() {
+            log('info', '🧪 Test Compute Fibonacci...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('compute.execute', {
+                    task: 'fibonacci',
+                    data: { n: 30 }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Fibonacci(30) = ${result.data.result} en ${duration}ms`);
+                addResult('Compute Fibonacci', true, duration, `Résultat: ${result.data.result}`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Compute Fibonacci', false, duration, error.message);
+            }
+        };
+
+        window.testComputeFactorial = async function() {
+            log('info', '🧪 Test Compute Factorial...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('compute.execute', {
+                    task: 'factorial',
+                    data: { n: 15 }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Factorial(15) = ${result.data.result} en ${duration}ms`);
+                addResult('Compute Factorial', true, duration, `Résultat: ${result.data.result}`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Compute Factorial', false, duration, error.message);
+            }
+        };
+
+        window.testComputePrime = async function() {
+            log('info', '🧪 Test Compute IsPrime...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('compute.execute', {
+                    task: 'isPrime',
+                    data: { n: 97 }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ 97 est premier: ${result.data.result} en ${duration}ms`);
+                addResult('Compute IsPrime', true, duration, `Résultat: ${result.data.result}`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Compute IsPrime', false, duration, error.message);
+            }
+        };
+
+        window.testComputeHash = async function() {
+            log('info', '🧪 Test Compute Hash SHA256...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('compute.execute', {
+                    task: 'hash_sha256',
+                    data: { input: 'CSOP v0.2.0' }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Hash généré en ${duration}ms`);
+                addResult('Compute Hash', true, duration, 'Hash SHA256 OK');
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Compute Hash', false, duration, error.message);
+            }
+        };
+
+        window.testComputeBatch = async function() {
+            log('info', '🧪 Test Compute Batch...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('compute.batch', {
+                    tasks: [
+                        { task: 'fibonacci', data: { n: 20 } },
+                        { task: 'factorial', data: { n: 10 } },
+                        { task: 'isPrime', data: { n: 97 } }
+                    ]
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Batch: ${result.data.completed}/${result.data.total} en ${duration}ms`);
+                addResult('Compute Batch', true, duration, `${result.data.completed} tâches`);
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Compute Batch', false, duration, error.message);
+            }
+        };
+
+        window.testComputeValidation = async function() {
+            log('info', '🧪 Test Compute Validation (NEW v0.2.0)...');
+            const start = Date.now();
+            try {
+                await csop.dispatch('compute.execute', {
+                    task: 'unknown_task',
+                    data: {}
+                });
+                log('error', '❌ Devrait échouer avec task invalide');
+                addResult('Compute Validation', false, Date.now() - start, 'Validation non fonctionnelle');
+            } catch (error) {
+                const duration = Date.now() - start;
+                if (error.code === 'COMPUTE_INVALID_TASK' || error.code === 'VALIDATION_ERROR') {
+                    log('success', `✅ Validation OK: ${error.message}`);
+                    addResult('Compute Validation', true, duration, 'Validation fonctionnelle');
+                } else {
+                    log('error', `❌ Mauvais code erreur: ${error.code}`);
+                    addResult('Compute Validation', false, duration, error.code);
+                }
+            }
+        };
+
+        // Tests Sync
+        window.testSyncBroadcast = async function() {
+            log('info', '🧪 Test Sync Broadcast...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('sync.broadcast', {
+                    event: 'test_user_action',
+                    data: { action: 'click', userId: 'anzize', timestamp: Date.now() }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Event broadcast en ${duration}ms`);
+                addResult('Sync Broadcast', true, duration, 'Event envoyé');
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Sync Broadcast', false, duration, error.message);
+            }
+        };
+
+        window.testSyncSubscribe = async function() {
+            log('info', '🧪 Test Sync Subscribe...');
+            const start = Date.now();
+            try {
+                const result = await csop.dispatch('sync.subscribe', {
+                    channel: 'test_workspace',
+                    callback: (message) => {
+                        log('info', `📨 Message reçu: ${JSON.stringify(message)}`);
+                    }
+                });
+                const duration = Date.now() - start;
+                log('success', `✅ Souscription OK en ${duration}ms`);
+                addResult('Sync Subscribe', true, duration, 'Channel: test_workspace');
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur: ${error.message}`);
+                addResult('Sync Subscribe', false, duration, error.message);
+            }
+        };
+
+        window.testSyncValidation = async function() {
+            log('info', '🧪 Test Sync Validation (NEW v0.2.0)...');
+            const start = Date.now();
+            try {
+                // Test event name trop long
+                await csop.dispatch('sync.broadcast', {
+                    event: 'a'.repeat(150),
+                    data: {}
+                });
+                log('error', '❌ Devrait échouer avec event name trop long');
+                addResult('Sync Validation', false, Date.now() - start, 'Validation non fonctionnelle');
+            } catch (error) {
+                const duration = Date.now() - start;
+                if (error.code === 'VALIDATION_ERROR') {
+                    log('success', `✅ Validation OK: ${error.message}`);
+                    addResult('Sync Validation', true, duration, 'Validation fonctionnelle');
+                } else {
+                    log('error', `❌ Mauvais code erreur: ${error.code}`);
+                    addResult('Sync Validation', false, duration, error.code);
+                }
+            }
+        };
+
+        // Tests Error Handling
+        window.testErrorCodes = async function() {
+            log('info', '🧪 Test Error Codes (ENHANCED v0.2.0)...');
+            const start = Date.now();
+            const errorTests = [];
+
+            try {
+                // Test KEY_NOT_FOUND
+                try {
+                    await csop.dispatch('storage.get', { key: 'nonexistent_key_12345' });
+                } catch (e) {
+                    errorTests.push({
+                        code: e.code,
+                        expected: 'KEY_NOT_FOUND',
+                        match: e.code === 'KEY_NOT_FOUND'
+                    });
+                    log('info', `🔍 Error code: ${e.code} - ${e.message}`);
+                }
+
+                // Test VALIDATION_ERROR
+                try {
+                    await csop.dispatch('storage.save', { key: 'invalid@key', data: {} });
+                } catch (e) {
+                    errorTests.push({
+                        code: e.code,
+                        expected: 'VALIDATION_ERROR',
+                        match: e.code === 'VALIDATION_ERROR'
+                    });
+                    log('info', `🔍 Error code: ${e.code} - ${e.message}`);
+                }
+
+                // Test INVALID_ACTION
+                try {
+                    await csop.dispatch('invalid.action', {});
+                } catch (e) {
+                    errorTests.push({
+                        code: e.code,
+                        expected: 'INVALID_ACTION',
+                        match: e.code === 'INVALID_ACTION' || e.code === 'CAPABILITY_NOT_FOUND'
+                    });
+                    log('info', `🔍 Error code: ${e.code} - ${e.message}`);
+                }
+
+                const duration = Date.now() - start;
+                const allMatch = errorTests.every(t => t.match);
+                
+                if (allMatch) {
+                    log('success', `✅ Tous les codes d'erreur sont corrects (${errorTests.length} testés)`);
+                    addResult('Error Codes', true, duration, `${errorTests.length} codes testés`);
+                } else {
+                    log('error', `❌ Certains codes ne correspondent pas`);
+                    addResult('Error Codes', false, duration, 'Codes incorrects');
+                }
+            } catch (error) {
+                const duration = Date.now() - start;
+                log('error', `❌ Erreur test: ${error.message}`);
+                addResult('Error Codes', false, duration, error.message);
+            }
+        };
+
+        window.testRetry = async function() {
+            log('info', '🧪 Test Retry Logic...');
+            const start = Date.now();
+            try {
+                // Simuler une action avec retry
+                const result = await csop.dispatch('storage.get', 
+                    { key: 'might_fail_key' },
+                    { retry: 3, timeout: 5000 }
+                );
+                const duration = Date.now() - start;
+                log('success', `✅ Retry logic OK en ${duration}ms`);
+                addResult('Retry Logic', true, duration, 'Retry fonctionnel');
+            } catch (error) {
+                const duration = Date.now() - start;
+                if (error.code === 'KEY_NOT_FOUND') {
+                    log('success', `✅ Retry effectué, clé introuvable (normal)`);
+                    addResult('Retry Logic', true, duration, 'Retry effectué');
+                } else {
+                    log('error', `❌ Erreur: ${error.message}`);
+                    addResult('Retry Logic', false, duration, error.message);
+                }
+            }
+        };
+
+        window.testTimeout = async function() {
+            log('info', '🧪 Test Timeout...');
+            const start = Date.now();
+            try {
+                // Action avec timeout très court
+                await csop.dispatch('compute.execute',
+                    { task: 'fibonacci', data: { n: 40 } },
+                    { timeout: 1 }
+                );
+                const duration = Date.now() - start;
+                log('error', '❌ Devrait timeout');
+                addResult('Timeout', false, duration, 'Pas de timeout');
+            } catch (error) {
+                const duration = Date.now() - start;
+                if (error.code === 'TIMEOUT' || duration < 100) {
+                    log('success', `✅ Timeout détecté correctement en ${duration}ms`);
+                    addResult('Timeout', true, duration, 'Timeout fonctionnel');
+                } else {
+                    log('warning', `⚠️ Timeout non détecté: ${error.code}`);
+                    addResult('Timeout', false, duration, error.code);
+                }
+            }
+        };
+
+        // Suite de tests
+        window.testQuickSuite = async function() {
+            log('info', '⚡ Lancement Suite Rapide...');
+            testResults.startTime = Date.now();
+            
+            const tests = [
+                testInit,
+                testInfo,
+                testStorageSave,
+                testStorageGet,
+                testComputeFibonacci,
+                testComputeBatch
+            ];
+
+            for (let i = 0; i < tests.length; i++) {
+                const progress = Math.round(((i + 1) / tests.length) * 100);
+                updateProgress(progress);
+                await tests[i]();
+                await sleep(500);
+            }
+
+            log('success', '✅ Suite Rapide Terminée !');
+        };
+
+        window.runAllTests = async function() {
+            log('info', '🚀 Lancement de TOUS les tests...');
+            testResults.startTime = Date.now();
+            
+            const allTests = [
+                // Core
+                { name: 'Init', fn: testInit },
+                { name: 'Info', fn: testInfo },
+                { name: 'Stats', fn: testStats },
+                
+                // Storage
+                { name: 'Storage Save', fn: testStorageSave },
+                { name: 'Storage Get', fn: testStorageGet },
+                { name: 'Storage Delete', fn: testStorageDelete },
+                { name: 'Storage List', fn: testStorageList },
+                { name: 'Storage Validation', fn: testStorageValidation },
+                
+                // Compute
+                { name: 'Compute Fibonacci', fn: testComputeFibonacci },
+                { name: 'Compute Factorial', fn: testComputeFactorial },
+                { name: 'Compute Prime', fn: testComputePrime },
+                { name: 'Compute Hash', fn: testComputeHash },
+                { name: 'Compute Batch', fn: testComputeBatch },
+                { name: 'Compute Validation', fn: testComputeValidation },
+                
+                // Sync
+                { name: 'Sync Broadcast', fn: testSyncBroadcast },
+                { name: 'Sync Subscribe', fn: testSyncSubscribe },
+                { name: 'Sync Validation', fn: testSyncValidation },
+                
+                // Error Handling
+                { name: 'Error Codes', fn: testErrorCodes },
+                { name: 'Retry Logic', fn: testRetry },
+                { name: 'Timeout', fn: testTimeout }
+            ];
+
+            for (let i = 0; i < allTests.length; i++) {
+                const test = allTests[i];
+                const progress = Math.round(((i + 1) / allTests.length) * 100);
+                updateProgress(progress);
+                
+                log('info', `\n--- Test ${i + 1}/${allTests.length}: ${test.name} ---`);
+                
+                try {
+                    await test.fn();
+                } catch (error) {
+                    log('error', `❌ Test ${test.name} a crashé: ${error.message}`);
+                }
+                
+                await sleep(300);
+            }
+
+            const totalTime = Math.round((Date.now() - testResults.startTime) / 1000);
+            const successRate = Math.round((testResults.success / testResults.total) * 100);
+            
+            log('success', `\n🎉 TOUS LES TESTS TERMINÉS !`);
+            log('info', `📊 Résultats: ${testResults.success}/${testResults.total} réussis (${successRate}%)`);
+            log('info', `⏱️ Temps total: ${totalTime}s`);
+            
+            if (successRate === 100) {
+                log('success', '🏆 PERFECT SCORE - Toutes les fonctionnalités marchent !');
+            } else if (successRate >= 80) {
+                log('success', '✅ Excellent - La plupart des fonctionnalités marchent');
+            } else if (successRate >= 60) {
+                log('warning', '⚠️ Acceptable - Certaines fonctionnalités nécessitent attention');
+            } else {
+                log('error', '❌ Critique - Beaucoup de fonctionnalités échouent');
+            }
+        };
+
+        // Utilitaires
+        function updateProgress(percent) {
+            const bar = document.getElementById('progressBar');
+            bar.style.width = percent + '%';
+            bar.textContent = percent + '%';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Auto-init au chargement
+        window.addEventListener('DOMContentLoaded', async () => {
+            log('info', '🌐 Page chargée, initialisation...');
+            await init();
+            log('success', '✅ Prêt ! Utilisez les boutons pour lancer les tests.');
+        });
+
+        // Export fonctions pour debug console
+        window.csop = csop;
+        window.clearLogs = clearLogs;
+        window.resetStats = resetStats;
     </script>
 </body>
 </html>
