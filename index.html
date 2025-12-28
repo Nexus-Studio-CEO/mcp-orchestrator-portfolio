@@ -1,304 +1,125 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test FrontendRAFT</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-    .container {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    h1 {
-      color: #667eea;
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 0.9em;
-    }
-    .status {
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-    .status.loading {
-      background: #fff3cd;
-      color: #856404;
-    }
-    .status.ready {
-      background: #d4edda;
-      color: #155724;
-    }
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-    }
-    button {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-right: 10px;
-      margin-bottom: 10px;
-      transition: all 0.3s;
-    }
-    button:hover:not(:disabled) {
-      background: #5568d3;
-      transform: translateY(-2px);
-    }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    pre {
-      background: #2d3748;
-      color: #68d391;
-      padding: 15px;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin-top: 20px;
-      font-size: 13px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .error-details {
-      background: #fff;
-      border: 2px solid #f8d7da;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test FrontendRAFT v0.1.0</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🚀 Test FrontendRAFT</h1>
-    <p class="subtitle">RAFT = Reactive API for Frontend Transformation</p>
+    <h1>🚀 FrontendRAFT v0.1.0 Test</h1>
     
     <div id="status" class="status loading">
-      ⏳ Initialisation...
+        ⏳ Chargement de FrontendRAFT...
     </div>
 
-    <div id="error-container"></div>
+    <div id="info"></div>
 
-    <button id="testBtn" onclick="testAPI()" disabled>
-      🧪 Tester l'API
-    </button>
+    <script type="module">
+        const statusDiv = document.getElementById('status');
+        const infoDiv = document.getElementById('info');
 
-    <button onclick="testStorage()" disabled id="storageBtn">
-      💾 Test Storage
-    </button>
+        try {
+            // Import FrontendRAFT
+            const { FrontendRAFT, VERSION, CSOP_VERSION } = await import(
+                'https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/src/index.js'
+            );
 
-    <button onclick="testCache()" disabled id="cacheBtn">
-      📦 Test Cache
-    </button>
+            // Créer instance
+            const raft = new FrontendRAFT({
+                name: 'Test API',
+                version: '1.0.0'
+            });
 
-    <button onclick="showMetadata()" disabled id="metaBtn">
-      ℹ️ Metadata
-    </button>
+            // Initialiser
+            await raft.init();
 
-    <pre id="output"></pre>
-  </div>
+            // Afficher succès
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = '✅ FrontendRAFT chargé et initialisé avec succès !';
 
-  <script type="module">
-    let raft;
+            // Afficher infos
+            infoDiv.innerHTML = `
+                <h2>📦 Informations du Package</h2>
+                <pre>${JSON.stringify({
+                    'FrontendRAFT Version': VERSION,
+                    'CSOP Version': CSOP_VERSION,
+                    'API ID': raft.apiId,
+                    'API Name': raft.config.name,
+                    'Initialized': raft.initialized,
+                    'Capabilities': {
+                        'Storage': !!raft.storage,
+                        'Compute': !!raft.compute,
+                        'P2P': !!raft.p2p,
+                        'Auth': !!raft.auth,
+                        'Router': !!raft.router,
+                        'Cache': !!raft.cache,
+                        'Stream': !!raft.stream,
+                        'Batch': !!raft.batch,
+                        'Optimistic': !!raft.optimistic,
+                        'Query': !!raft.query
+                    }
+                }, null, 2)}</pre>
 
-    function updateStatus(message, type = 'loading') {
-      const statusEl = document.getElementById('status');
-      statusEl.textContent = message;
-      statusEl.className = `status ${type}`;
-    }
+                <h2>🧪 Test Simple</h2>
+                <p>Définissons une route et testons-la :</p>
+                <pre id="testResult">Exécution du test...</pre>
+            `;
 
-    function showError(error) {
-      const errorContainer = document.getElementById('error-container');
-      errorContainer.innerHTML = `
-        <div class="error-details">
-          <h3>❌ Erreur détectée</h3>
-          <p><strong>Message:</strong> ${error.message}</p>
-          <p><strong>Type:</strong> ${error.name}</p>
-          ${error.stack ? `<details><summary>Stack trace</summary><pre>${error.stack}</pre></details>` : ''}
-        </div>
-      `;
-    }
+            // Test simple
+            raft.routes({
+                'GET /hello': async () => ({ 
+                    message: 'Hello from FrontendRAFT!',
+                    timestamp: Date.now()
+                })
+            });
 
-    function enableButtons() {
-      document.getElementById('testBtn').disabled = false;
-      document.getElementById('storageBtn').disabled = false;
-      document.getElementById('cacheBtn').disabled = false;
-      document.getElementById('metaBtn').disabled = false;
-    }
+            const result = await raft.get('/hello');
+            
+            document.getElementById('testResult').textContent = 
+                'Test réussi !\n\n' + JSON.stringify(result, null, 2);
 
-    async function init() {
-      try {
-        updateStatus('🔄 Chargement de FrontendRAFT depuis CDN...', 'loading');
-
-        // Import depuis CDN jsDelivr
-        const { FrontendRAFT } = await import('https://cdn.jsdelivr.net/gh/Nexus-Studio-CEO/FrontendRAFT@v0.1.0/cdn/v0.1.0/frontendraft.mjs');
-        
-        updateStatus('🔄 Création instance RAFT...', 'loading');
-
-        raft = new FrontendRAFT({
-          name: "API de Test",
-          autoRegister: false  // Pas d'auto-registration en test
-        });
-
-        updateStatus('🔄 Initialisation RAFT (chargement CSOP)...', 'loading');
-
-        await raft.init();
-
-        updateStatus('✅ FrontendRAFT prêt !', 'ready');
-
-        // Définir des endpoints de test
-        raft.get('/hello', async (req) => {
-          return { 
-            message: 'Hello from FrontendRAFT!', 
-            timestamp: Date.now(),
-            version: '0.1.0'
-          };
-        });
-
-        raft.get('/users', async (req) => {
-          return {
-            users: [
-              { id: 1, name: 'Alice', email: 'alice@example.com' },
-              { id: 2, name: 'Bob', email: 'bob@example.com' }
-            ],
-            total: 2
-          };
-        });
-
-        raft.post('/users', async (req) => {
-          return {
-            success: true,
-            user: req.body,
-            message: 'User created (simulated)'
-          };
-        });
-
-        // Exposer globalement
-        window.raft = raft;
-
-        // Activer les boutons
-        enableButtons();
-
-        // Afficher metadata
-        const metadata = raft.getMetadata();
-        document.getElementById('output').textContent = 
-          '🎉 FrontendRAFT initialisé avec succès!\n\n' +
-          '📦 Metadata:\n' + 
-          JSON.stringify(metadata, null, 2);
-
-        console.log('✅ FrontendRAFT ready:', raft);
-
-      } catch (error) {
-        console.error('❌ Erreur d\'initialisation:', error);
-        updateStatus('❌ Erreur d\'initialisation', 'error');
-        showError(error);
-
-        document.getElementById('output').textContent = 
-          '❌ ERREUR:\n' + error.message + '\n\n' + 
-          (error.stack || 'Pas de stack trace disponible');
-      }
-    }
-
-    window.testAPI = async function() {
-      try {
-        const output = document.getElementById('output');
-        output.textContent = '🔄 Test en cours...';
-
-        const result = await raft.router.handle({
-          method: 'GET',
-          path: '/hello',
-          headers: {}
-        });
-
-        output.textContent = '✅ API Response:\n' + JSON.stringify(result, null, 2);
-      } catch (error) {
-        document.getElementById('output').textContent = 
-          '❌ Erreur:\n' + error.message;
-      }
-    };
-
-    window.testStorage = async function() {
-      try {
-        const output = document.getElementById('output');
-        output.textContent = '🔄 Test storage...';
-
-        const testData = { 
-          message: 'Hello Storage!', 
-          timestamp: Date.now(),
-          random: Math.random()
-        };
-
-        // Sauvegarder
-        await raft.storage.save('test-key', testData);
-        output.textContent += '\n✓ Sauvegarde OK';
-
-        // Récupérer
-        const retrieved = await raft.storage.get('test-key');
-        output.textContent += '\n✓ Récupération OK\n\n';
-
-        output.textContent += '📦 Données:\n' + JSON.stringify(retrieved, null, 2);
-      } catch (error) {
-        document.getElementById('output').textContent = 
-          '❌ Erreur storage:\n' + error.message;
-      }
-    };
-
-    window.testCache = async function() {
-      try {
-        const output = document.getElementById('output');
-        output.textContent = '🔄 Test cache...';
-
-        const cacheData = {
-          cached: true,
-          time: new Date().toISOString()
-        };
-
-        // Set cache avec TTL de 10 secondes
-        await raft.cache.set('test-cache', cacheData, { ttl: 10000 });
-        output.textContent += '\n✓ Cache set (TTL: 10s)';
-
-        // Get cache
-        const cached = await raft.cache.get('test-cache');
-        output.textContent += '\n✓ Cache hit!\n\n';
-
-        output.textContent += '📦 Cached data:\n' + JSON.stringify(cached, null, 2);
-
-        // Stats
-        const stats = raft.cache.getStats();
-        output.textContent += '\n\n📊 Cache stats:\n' + JSON.stringify(stats, null, 2);
-      } catch (error) {
-        document.getElementById('output').textContent = 
-          '❌ Erreur cache:\n' + error.message;
-      }
-    };
-
-    window.showMetadata = function() {
-      const metadata = raft.getMetadata();
-      document.getElementById('output').textContent = 
-        '📦 Metadata API:\n' + JSON.stringify(metadata, null, 2);
-    };
-
-    // Démarrer l'initialisation au chargement
-    init();
-  </script>
+        } catch (error) {
+            statusDiv.className = 'status error';
+            statusDiv.innerHTML = `❌ Erreur: ${error.message}`;
+            
+            infoDiv.innerHTML = `
+                <h2>🐛 Détails de l'Erreur</h2>
+                <pre>${error.stack}</pre>
+            `;
+        }
+    </script>
 </body>
 </html>
