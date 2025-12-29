@@ -73,14 +73,9 @@
                 <div class="bg-gray-900/50 p-3 rounded-lg border border-gray-700">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="bg-green-600 text-white px-2 py-1 rounded font-bold text-xs">POST</span>
-                        <span class="mono text-gray-300">?action=write</span>
+                        <span class="mono text-gray-300">?action=write&body={...}</span>
                     </div>
-                    <div class="text-gray-400 text-xs">Écrire des données</div>
-                    <pre class="mt-2 bg-gray-900 p-2 rounded text-xs mono text-green-400 overflow-x-auto">{
-  "collection": "users",
-  "key": "user_123",
-  "data": { "name": "Anzize" }
-}</pre>
+                    <div class="text-gray-400 text-xs">Écrire des données (body dans URL encoded)</div>
                 </div>
 
                 <div class="bg-gray-900/50 p-3 rounded-lg border border-gray-700">
@@ -102,7 +97,7 @@
                 <div class="bg-gray-900/50 p-3 rounded-lg border border-gray-700">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="bg-yellow-600 text-white px-2 py-1 rounded font-bold text-xs">PUT</span>
-                        <span class="mono text-gray-300">?action=update</span>
+                        <span class="mono text-gray-300">?action=update&body={...}</span>
                     </div>
                     <div class="text-gray-400 text-xs">Mettre à jour un document</div>
                 </div>
@@ -174,79 +169,6 @@
             <div id="logs" class="space-y-1 text-xs mono max-h-64 overflow-y-auto"></div>
         </div>
 
-        <!-- Server Integration Example -->
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
-            <h2 class="text-xl font-bold mb-4">🐍 Server Integration (Python Example)</h2>
-            <pre class="bg-gray-900 border border-gray-700 rounded p-4 text-xs mono overflow-x-auto text-green-400">import requests
-import os
-
-# Configuration
-STORAGE_NODE_URL = os.getenv("CSOP_STORAGE_URL", "https://your-storage-node.vercel.app")
-
-class CSOPClient:
-    def __init__(self, base_url):
-        self.base_url = base_url
-    
-    def write(self, collection, key, data):
-        """Écrire des données"""
-        response = requests.post(
-            f"{self.base_url}?action=write",
-            json={
-                "collection": collection,
-                "key": key,
-                "data": data
-            }
-        )
-        return response.json()
-    
-    def read(self, collection, key):
-        """Lire des données"""
-        response = requests.get(
-            f"{self.base_url}?action=read&collection={collection}&key={key}"
-        )
-        return response.json()
-    
-    def list(self, collection):
-        """Lister tous les documents"""
-        response = requests.get(
-            f"{self.base_url}?action=list&collection={collection}"
-        )
-        return response.json()
-    
-    def update(self, collection, key, data):
-        """Mettre à jour"""
-        response = requests.put(
-            f"{self.base_url}?action=update",
-            json={
-                "collection": collection,
-                "key": key,
-                "data": data
-            }
-        )
-        return response.json()
-    
-    def delete(self, collection, key):
-        """Supprimer"""
-        response = requests.delete(
-            f"{self.base_url}?action=delete&collection={collection}&key={key}"
-        )
-        return response.json()
-
-# Utilisation
-db = CSOPClient(STORAGE_NODE_URL)
-
-# Écrire
-db.write("users", "user_123", {"name": "Anzize", "role": "CEO"})
-
-# Lire
-user = db.read("users", "user_123")
-print(user)
-
-# Lister
-all_users = db.list("users")
-print(f"Total users: {len(all_users['data'])}")</pre>
-        </div>
-
     </div>
 
     <script>
@@ -276,7 +198,6 @@ print(f"Total users: {len(all_users['data'])}")</pre>
                     
                     request.onupgradeneeded = (e) => {
                         const db = e.target.result;
-                        // Store unique pour chaque collection
                         if (!db.objectStoreNames.contains('storage')) {
                             const store = db.createObjectStore('storage', { keyPath: 'fullKey' });
                             store.createIndex('collection', 'collection', { unique: false });
@@ -383,52 +304,78 @@ print(f"Total users: {len(all_users['data'])}")</pre>
 
         // ========== REST API HANDLER ==========
         
-        async function handleRequest(params, body = null) {
+        async function handleRequest(urlParams) {
             STATS.requests++;
             updateStats();
 
-            const action = params.get('action');
-            const collection = params.get('collection');
-            const key = params.get('key');
+            const action = urlParams.get('action');
+            const collection = urlParams.get('collection');
+            const key = urlParams.get('key');
+            const bodyParam = urlParams.get('body');
 
-            log(`${action.toUpperCase()} /${collection}/${key || 'all'}`, 'info');
+            log(`${action?.toUpperCase() || 'UNKNOWN'} /${collection || '?'}/${key || 'all'}`, 'info');
 
             try {
+                let body = null;
+                if (bodyParam) {
+                    try {
+                        body = JSON.parse(decodeURIComponent(bodyParam));
+                    } catch (e) {
+                        throw new Error('Invalid JSON in body parameter');
+                    }
+                }
+
                 let result;
 
                 switch (action) {
                     case 'write':
-                        if (!body) throw new Error('Body required');
+                        if (!body || !body.collection || !body.key || !body.data) {
+                            throw new Error('Body must contain: collection, key, data');
+                        }
                         result = await DB.write(body.collection, body.key, body.data);
                         break;
                     
                     case 'read':
+                        if (!collection || !key) {
+                            throw new Error('collection and key required');
+                        }
                         result = await DB.read(collection, key);
                         break;
                     
                     case 'list':
+                        if (!collection) {
+                            throw new Error('collection required');
+                        }
                         result = await DB.list(collection);
                         break;
                     
                     case 'update':
-                        if (!body) throw new Error('Body required');
+                        if (!body || !body.collection || !body.key || !body.data) {
+                            throw new Error('Body must contain: collection, key, data');
+                        }
                         result = await DB.update(body.collection, body.key, body.data);
                         break;
                     
                     case 'delete':
+                        if (!collection || !key) {
+                            throw new Error('collection and key required');
+                        }
                         result = await DB.delete(collection, key);
                         break;
                     
                     default:
-                        throw new Error('Invalid action');
+                        throw new Error(`Invalid action: ${action}`);
                 }
 
                 log(`✓ ${action.toUpperCase()} success`, 'success');
                 return result;
 
             } catch (error) {
-                log(`✗ ${action.toUpperCase()} failed: ${error.message}`, 'error');
-                throw error;
+                log(`✗ ${action?.toUpperCase() || 'REQUEST'} failed: ${error.message}`, 'error');
+                return {
+                    success: false,
+                    error: error.message
+                };
             }
         }
 
@@ -444,20 +391,13 @@ print(f"Total users: {len(all_users['data'])}")</pre>
             // Si requête API externe
             if (action) {
                 try {
-                    let body = null;
-                    
-                    // Pour POST/PUT, parser le body depuis query param ou POST data
-                    if (urlParams.get('body')) {
-                        body = JSON.parse(decodeURIComponent(urlParams.get('body')));
-                    }
-
-                    const result = await handleRequest(urlParams, body);
+                    const result = await handleRequest(urlParams);
                     
                     // Retourner JSON pur
-                    document.body.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.body.innerHTML = `<pre style="color: #10b981; background: #000; padding: 20px; font-family: monospace;">${JSON.stringify(result, null, 2)}</pre>`;
                     
                 } catch (error) {
-                    document.body.innerHTML = `<pre>${JSON.stringify({ 
+                    document.body.innerHTML = `<pre style="color: #ef4444; background: #000; padding: 20px; font-family: monospace;">${JSON.stringify({ 
                         success: false, 
                         error: error.message 
                     }, null, 2)}</pre>`;
@@ -486,9 +426,12 @@ print(f"Total users: {len(all_users['data'])}")</pre>
                 }
 
                 const params = new URLSearchParams({ action, collection, key });
-                const body = data ? { collection, key, data } : null;
+                
+                if (data) {
+                    params.set('body', JSON.stringify({ collection, key, data }));
+                }
 
-                const result = await handleRequest(params, body);
+                const result = await handleRequest(params);
                 
                 document.getElementById('response').textContent = JSON.stringify(result, null, 2);
                 await refreshStorage();
