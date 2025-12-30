@@ -2,137 +2,70 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>RAFT | Discovery & Test Suite</title>
+    <title>RAFT | Brute Force Loader</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .log-entry { font-family: 'Consolas', monospace; border-left: 3px solid #334155; padding-left: 10px; margin-bottom: 4px; }
-        .success { border-color: #10b981; color: #34d399; }
-        .error { border-color: #ef4444; color: #f87171; }
-        .info { border-color: #3b82f6; color: #60a5fa; }
-        .warning { border-color: #f59e0b; color: #fbbf24; }
-    </style>
 </head>
-<body class="bg-slate-900 text-slate-200 p-6">
+<body class="bg-slate-900 text-slate-200 p-10">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-white">🚀 RAFT <span class="text-blue-400">Auto-Discovery</span></h1>
-            <p class="text-slate-400">Tentative intelligente de chargement de la v0.1.1</p>
-        </header>
-
-        <div id="detection-panel" class="bg-slate-800 rounded-xl p-5 mb-6 border border-slate-700">
-            <h2 class="text-lg font-semibold mb-4 flex items-center">
-                <span class="mr-2 italic text-blue-400 font-mono">STEP 1:</span> Analyse du Module
-            </h2>
-            <div id="strategy-logs" class="space-y-2 text-sm"></div>
-        </div>
-
-        <div id="test-panel" class="hidden bg-black rounded-xl p-5 border border-slate-700 shadow-2xl">
-            <h2 class="text-lg font-semibold mb-4 flex items-center text-emerald-400">
-                <span class="mr-2 italic font-mono text-emerald-500">STEP 2:</span> Validation Fonctionnelle
-            </h2>
-            <div id="test-logs" class="space-y-2 text-xs h-64 overflow-y-auto"></div>
-        </div>
+    <div class="max-w-2xl mx-auto bg-slate-800 p-6 rounded-2xl border border-slate-700">
+        <h1 class="text-2xl font-bold mb-6 italic text-blue-400 underline">Diagnostic de Chargement v0.1.1</h1>
+        <div id="logs" class="font-mono text-sm space-y-2"></div>
     </div>
 
-    <script type="module">
-        const pkgUrl = 'https://cdn.jsdelivr.net/npm/@tryboy869/frontendraft@0.1.1/dist/index.js';
-        const strategyLogs = document.getElementById('strategy-logs');
-        const testLogs = document.getElementById('test-logs');
-        const testPanel = document.getElementById('test-panel');
-
-        function log(container, msg, type = 'info') {
-            const div = document.createElement('div');
-            div.className = `log-entry ${type}`;
-            div.innerHTML = `<span>[${type.toUpperCase()}]</span> ${msg}`;
-            container.appendChild(div);
+    <script>
+        const logs = document.getElementById('logs');
+        function addLog(msg, color = "text-slate-300") {
+            logs.innerHTML += `<div class="${color}">> ${msg}</div>`;
         }
 
-        async function startDiscovery() {
-            log(strategyLogs, `Tentative d'importation depuis : ${pkgUrl}`, 'info');
+        // --- TEST 1 : Tentative de chargement via Script Classique (Window Global) ---
+        function testGlobalLoad() {
+            addLog("Tentative 1 : Chargement via &lt;script&gt; classique...", "text-yellow-400");
+            const script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/@tryboy869/frontendraft@0.1.1/dist/index.js";
             
-            try {
-                // 1. Chargement dynamique du module
-                const module = await import(pkgUrl);
-                log(strategyLogs, `Module chargé. Analyse des exports...`, 'success');
-                console.log("Structure du module :", module);
-
-                let FoundClass = null;
-                let methodUsed = "";
-
-                // STRATÉGIE A : Export nommé { FrontendRAFT }
-                if (module.FrontendRAFT) {
-                    log(strategyLogs, "Stratégie A : Export nommé 'FrontendRAFT' trouvé.", "success");
-                    FoundClass = module.FrontendRAFT;
-                    methodUsed = "Named Export { FrontendRAFT }";
-                } 
-                // STRATÉGIE B : Export par défaut (default)
-                else if (module.default) {
-                    log(strategyLogs, "Stratégie B : Export par défaut 'default' trouvé.", "success");
-                    FoundClass = module.default;
-                    methodUsed = "Default Export";
-                }
-                // STRATÉGIE C : Le module est lui-même la classe (CommonJS wrapper)
-                else if (typeof module === 'function' || (typeof module === 'object' && Object.keys(module).length > 0)) {
-                    log(strategyLogs, "Stratégie C : Utilisation de l'objet racine du module.", "warning");
-                    FoundClass = module;
-                    methodUsed = "Module Root";
-                }
-
-                if (FoundClass) {
-                    runFunctionalTests(FoundClass, methodUsed);
+            script.onload = () => {
+                addLog("Script chargé. Vérification de window.FrontendRAFT...", "text-blue-400");
+                if (window.FrontendRAFT) {
+                    addLog("✅ TROUVÉ ! La classe est disponible globalement sur 'window.FrontendRAFT'", "text-green-400");
+                    initRaft(window.FrontendRAFT);
                 } else {
-                    log(strategyLogs, "Aucune classe valide trouvée dans les exports.", "error");
+                    addLog("❌ ÉCHEC : Rien trouvé dans 'window'.", "text-red-400");
+                    testESM(); // Si Global échoue, on tente ESM
                 }
-
-            } catch (err) {
-                log(strategyLogs, `Échec critique de l'import : ${err.message}`, "error");
-                log(strategyLogs, "Conseil : Vérifie si le fichier dist/index.js est bien un module ESM (contient 'export').", "warning");
-            }
+            };
+            script.onerror = () => addLog("❌ Erreur réseau lors du chargement du script.", "text-red-400");
+            document.head.appendChild(script);
         }
 
-        async function runFunctionalTests(RaftClass, method) {
-            testPanel.classList.remove('hidden');
-            log(testLogs, `Initialisation avec la méthode : <b>${method}</b>`, "info");
-
+        // --- TEST 2 : Tentative via Import ESM ---
+        async function testESM() {
+            addLog("Tentative 2 : Chargement via import() dynamique...", "text-yellow-400");
             try {
-                // Tentative d'instanciation
-                const raft = new RaftClass({ 
-                    name: 'AutoDetectNode',
-                    version: '0.1.1'
-                });
-                log(testLogs, "Instance créée avec succès.", "success");
-
-                // Tentative de .init()
-                log(testLogs, "Appel de raft.init()...", "info");
-                
-                // On met un timeout car si ça freeze, on veut savoir
-                const initPromise = raft.init();
-                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout après 5s")), 5000));
-                
-                await Promise.race([initPromise, timeout]);
-                
-                log(testLogs, "✅ RAFT est totalement opérationnel !", "success");
-                log(testLogs, "Test stockage : Tentative de sauvegarde...", "info");
-                
-                await raft.storage.save('discovery_status', { success: true, timestamp: Date.now() });
-                const check = await raft.storage.get('discovery_status');
-                
-                if(check.success) {
-                    log(testLogs, "✅ Persistance IndexedDB fonctionnelle.", "success");
+                const mod = await import("https://cdn.jsdelivr.net/npm/@tryboy869/frontendraft@0.1.1/dist/index.js");
+                addLog("Module chargé. Analyse...", "text-blue-400");
+                const cls = mod.FrontendRAFT || mod.default;
+                if (cls) {
+                    addLog("✅ TROUVÉ ! Format ESM détecté.", "text-green-400");
+                    initRaft(cls);
                 }
-
-            } catch (err) {
-                log(testLogs, `Erreur lors de l'exécution : ${err.message}`, "error");
-                console.error(err);
-                
-                if (err.message.includes("is not a constructor")) {
-                    log(testLogs, "Détail : L'objet trouvé n'est pas une classe (Newable).", "error");
-                }
+            } catch (e) {
+                addLog("❌ ÉCHEC ESM : " + e.message, "text-red-400");
+                addLog("⚠️ ANALYSE : Ton package v0.1.1 n'est ni Global ni ESM. Il est peut-être en format CommonJS (Node.js uniquement).", "text-orange-500 font-bold");
             }
         }
 
-        startDiscovery();
+        async function initRaft(Cls) {
+            try {
+                const raft = new Cls({ name: "Debug" });
+                await raft.init();
+                addLog("🎉 INSTANCE INITIALISÉE AVEC SUCCÈS !", "text-emerald-400 font-bold");
+            } catch(e) {
+                addLog("🔥 Erreur lors du .init() : " + e.message, "text-red-500");
+            }
+        }
+
+        testGlobalLoad();
     </script>
 </body>
 </html>
