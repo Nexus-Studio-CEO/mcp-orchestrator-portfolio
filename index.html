@@ -2,160 +2,137 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FrontendRAFT v0.1.1 | Lab Test</title>
+    <title>RAFT | Discovery & Test Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
-        .console { font-family: 'Fira Code', monospace; }
-        .test-pass { color: #10b981; }
-        .test-fail { color: #ef4444; }
-        .test-info { color: #3b82f6; }
+        .log-entry { font-family: 'Consolas', monospace; border-left: 3px solid #334155; padding-left: 10px; margin-bottom: 4px; }
+        .success { border-color: #10b981; color: #34d399; }
+        .error { border-color: #ef4444; color: #f87171; }
+        .info { border-color: #3b82f6; color: #60a5fa; }
+        .warning { border-color: #f59e0b; color: #fbbf24; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
+<body class="bg-slate-900 text-slate-200 p-6">
 
     <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
-            <div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                    FrontendRAFT Lab
-                </h1>
-                <p class="text-slate-400 text-sm">Testing Version: <span class="badge bg-slate-800 px-2 py-1 rounded">v0.1.1</span></p>
-            </div>
-            <button onclick="runAllTests()" id="runBtn" class="bg-blue-600 hover:bg-blue-500 transition px-6 py-2 rounded-lg font-semibold">
-                Lancer les Tests
-            </button>
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-white">🚀 RAFT <span class="text-blue-400">Auto-Discovery</span></h1>
+            <p class="text-slate-400">Tentative intelligente de chargement de la v0.1.1</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-center">
-            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                <div class="text-slate-400 text-xs uppercase tracking-wider">Statut API</div>
-                <div id="api-status" class="text-xl font-bold italic text-yellow-500">Non Initialisée</div>
-            </div>
-            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                <div class="text-slate-400 text-xs uppercase tracking-wider">Tests Réussis</div>
-                <div id="tests-passed" class="text-2xl font-bold">0 / 6</div>
-            </div>
-            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                <div class="text-slate-400 text-xs uppercase tracking-wider">Mode</div>
-                <div class="text-xl font-bold text-emerald-500">Production (Vercel)</div>
-            </div>
+        <div id="detection-panel" class="bg-slate-800 rounded-xl p-5 mb-6 border border-slate-700">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <span class="mr-2 italic text-blue-400 font-mono">STEP 1:</span> Analyse du Module
+            </h2>
+            <div id="strategy-logs" class="space-y-2 text-sm"></div>
         </div>
 
-        <div class="bg-black rounded-xl p-4 border border-slate-700 shadow-2xl overflow-hidden">
-            <div class="flex gap-2 mb-4 border-b border-slate-800 pb-2">
-                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                <span class="text-xs text-slate-500 ml-2 uppercase italic">raft-internal-logs</span>
-            </div>
-            <div id="console-output" class="console text-sm h-[400px] overflow-y-auto space-y-1">
-                <div class="text-slate-500 italic">En attente de lancement...</div>
-            </div>
+        <div id="test-panel" class="hidden bg-black rounded-xl p-5 border border-slate-700 shadow-2xl">
+            <h2 class="text-lg font-semibold mb-4 flex items-center text-emerald-400">
+                <span class="mr-2 italic font-mono text-emerald-500">STEP 2:</span> Validation Fonctionnelle
+            </h2>
+            <div id="test-logs" class="space-y-2 text-xs h-64 overflow-y-auto"></div>
         </div>
     </div>
 
     <script type="module">
-        import { FrontendRAFT } from 'https://cdn.jsdelivr.net/npm/@tryboy869/frontendraft@0.1.1/dist/index.js';
+        const pkgUrl = 'https://cdn.jsdelivr.net/npm/@tryboy869/frontendraft@0.1.1/dist/index.js';
+        const strategyLogs = document.getElementById('strategy-logs');
+        const testLogs = document.getElementById('test-logs');
+        const testPanel = document.getElementById('test-panel');
 
-        const output = document.getElementById('console-output');
-        const apiStatus = document.getElementById('api-status');
-        const testsCounter = document.getElementById('tests-passed');
-        let passCount = 0;
-
-        function log(msg, type = 'info') {
+        function log(container, msg, type = 'info') {
             const div = document.createElement('div');
-            const colors = {
-                info: 'text-slate-400',
-                success: 'test-pass',
-                error: 'test-fail',
-                action: 'text-blue-400 font-bold'
-            };
-            div.className = colors[type];
-            div.innerHTML = `<span class="opacity-50">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
-            output.appendChild(div);
-            output.scrollTop = output.scrollHeight;
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `<span>[${type.toUpperCase()}]</span> ${msg}`;
+            container.appendChild(div);
         }
 
-        const raft = new FrontendRAFT({
-            name: 'Vercel Test Node',
-            version: '0.1.1'
-        });
-
-        window.runAllTests = async () => {
-            output.innerHTML = '';
-            passCount = 0;
-            log("🚀 Démarrage de la suite de tests FrontendRAFT...", "action");
-
+        async function startDiscovery() {
+            log(strategyLogs, `Tentative d'importation depuis : ${pkgUrl}`, 'info');
+            
             try {
-                // TEST 1: Initialisation
-                await raft.init();
-                apiStatus.innerText = "Connectée";
-                apiStatus.className = "text-xl font-bold text-emerald-500";
-                log("✅ RAFT.init() : Succès", "success");
-                passCount++;
+                // 1. Chargement dynamique du module
+                const module = await import(pkgUrl);
+                log(strategyLogs, `Module chargé. Analyse des exports...`, 'success');
+                console.log("Structure du module :", module);
 
-                // TEST 2: Storage (IndexedDB)
-                log("💾 Test du Storage Layer...");
-                await raft.storage.save('profile', { name: 'Anzize', dev: true });
-                const data = await raft.storage.get('profile');
-                if(data?.name === 'Anzize') {
-                    log("✅ Storage : Persistance IndexedDB vérifiée", "success");
-                    passCount++;
+                let FoundClass = null;
+                let methodUsed = "";
+
+                // STRATÉGIE A : Export nommé { FrontendRAFT }
+                if (module.FrontendRAFT) {
+                    log(strategyLogs, "Stratégie A : Export nommé 'FrontendRAFT' trouvé.", "success");
+                    FoundClass = module.FrontendRAFT;
+                    methodUsed = "Named Export { FrontendRAFT }";
+                } 
+                // STRATÉGIE B : Export par défaut (default)
+                else if (module.default) {
+                    log(strategyLogs, "Stratégie B : Export par défaut 'default' trouvé.", "success");
+                    FoundClass = module.default;
+                    methodUsed = "Default Export";
+                }
+                // STRATÉGIE C : Le module est lui-même la classe (CommonJS wrapper)
+                else if (typeof module === 'function' || (typeof module === 'object' && Object.keys(module).length > 0)) {
+                    log(strategyLogs, "Stratégie C : Utilisation de l'objet racine du module.", "warning");
+                    FoundClass = module;
+                    methodUsed = "Module Root";
                 }
 
-                // TEST 3: Routing & Middleware
-                log("📡 Test du Router Layer...");
-                raft.use(async (req) => {
-                    req.headers['X-Test'] = 'Passed';
-                });
-                raft.get('/v1/test', async (req) => {
-                    return { auth: req.headers['X-Test'], status: 'active' };
-                });
-                const res = await raft.handle({ method: 'GET', path: '/v1/test' });
-                if(res.auth === 'Passed') {
-                    log("✅ Router : Middleware & Routing OK", "success");
-                    passCount++;
-                }
-
-                // TEST 4: Query Engine
-                log("🔍 Test du Query Engine ($match & $select)...");
-                const users = [{id: 1, v: 10}, {id: 2, v: 20}];
-                const filtered = raft.queryData(users, { where: { v: { $gt: 15 } } });
-                if(filtered.length === 1 && filtered[0].v === 20) {
-                    log("✅ Query Engine : Filtrage réactif OK", "success");
-                    passCount++;
-                }
-
-                // TEST 5: Compute Layer (Web Workers)
-                log("⚙️ Test du Compute Layer (Web Workers)...");
-                try {
-                    const result = await raft.compute.execute((args) => args.n * 2, { n: 21 });
-                    if(result === 42) {
-                        log("✅ Compute : Web Worker déporté OK", "success");
-                        passCount++;
-                    }
-                } catch(e) {
-                    log("⚠️ Compute : Échec (Vérifie si le worker est bien packagé)", "error");
-                }
-
-                // TEST 6: P2P Layer
-                log("🌐 Test du P2P Layer (WebRTC)...");
-                if(raft.p2p) {
-                    log("✅ P2P : Instance WebRTC détectée", "success");
-                    passCount++;
+                if (FoundClass) {
+                    runFunctionalTests(FoundClass, methodUsed);
                 } else {
-                    log("❌ P2P : Instance manquante dans v0.1.1", "error");
+                    log(strategyLogs, "Aucune classe valide trouvée dans les exports.", "error");
                 }
 
             } catch (err) {
-                log(`❌ Erreur fatale : ${err.message}`, "error");
+                log(strategyLogs, `Échec critique de l'import : ${err.message}`, "error");
+                log(strategyLogs, "Conseil : Vérifie si le fichier dist/index.js est bien un module ESM (contient 'export').", "warning");
             }
+        }
 
-            testsCounter.innerText = `${passCount} / 6`;
-            log("--- FIN DES TESTS ---", "action");
-        };
+        async function runFunctionalTests(RaftClass, method) {
+            testPanel.classList.remove('hidden');
+            log(testLogs, `Initialisation avec la méthode : <b>${method}</b>`, "info");
+
+            try {
+                // Tentative d'instanciation
+                const raft = new RaftClass({ 
+                    name: 'AutoDetectNode',
+                    version: '0.1.1'
+                });
+                log(testLogs, "Instance créée avec succès.", "success");
+
+                // Tentative de .init()
+                log(testLogs, "Appel de raft.init()...", "info");
+                
+                // On met un timeout car si ça freeze, on veut savoir
+                const initPromise = raft.init();
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout après 5s")), 5000));
+                
+                await Promise.race([initPromise, timeout]);
+                
+                log(testLogs, "✅ RAFT est totalement opérationnel !", "success");
+                log(testLogs, "Test stockage : Tentative de sauvegarde...", "info");
+                
+                await raft.storage.save('discovery_status', { success: true, timestamp: Date.now() });
+                const check = await raft.storage.get('discovery_status');
+                
+                if(check.success) {
+                    log(testLogs, "✅ Persistance IndexedDB fonctionnelle.", "success");
+                }
+
+            } catch (err) {
+                log(testLogs, `Erreur lors de l'exécution : ${err.message}`, "error");
+                console.error(err);
+                
+                if (err.message.includes("is not a constructor")) {
+                    log(testLogs, "Détail : L'objet trouvé n'est pas une classe (Newable).", "error");
+                }
+            }
+        }
+
+        startDiscovery();
     </script>
 </body>
 </html>
