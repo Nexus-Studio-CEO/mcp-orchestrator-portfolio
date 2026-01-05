@@ -3,101 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UDC UI Framework</title>
+    <title>UDC Neural Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #050505; overflow: hidden; color: white; }
-        .ui-entity {
+        body { 
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            overflow: hidden; 
+            color: white;
+            margin: 0;
+            height: 100vh;
+        }
+        canvas {
             position: absolute;
-            transition: transform 0.1s linear;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            filter: blur(1px);
+        }
+        .ui-overlay {
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .node-card {
+            position: absolute;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            pointer-events: auto;
+            cursor: grab;
             user-select: none;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div id="app">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-blue-400">Interface UDC (Émergence UI)</h1>
-            <p class="text-gray-500">Cliquez pour ajouter une force. Les éléments s'auto-organisent.</p>
+    <canvas id="neuralCanvas"></canvas>
+
+    <div class="ui-overlay p-8">
+        <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+            UDC NEURAL REALITY
+        </h1>
+        <p class="text-slate-400 font-mono text-sm mt-2 uppercase tracking-widest">
+            Simulation d'émergence • 117M ops/sec engine logic
+        </p>
+        
+        <div class="mt-8 flex gap-4 pointer-events-auto">
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl">
+                <p class="text-[10px] text-slate-500 uppercase">Mode Interaction</p>
+                <p class="text-blue-400 font-bold" id="mode-text">RÉPULSION (GAUCHE)</p>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl">
+                <p class="text-[10px] text-slate-500 uppercase">Entités Actives</p>
+                <p class="text-emerald-400 font-bold" id="entity-count">0</p>
+            </div>
         </div>
-        <!-- Les entités seront injectées ici -->
     </div>
 
     <script>
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
         const entities = [];
-        const n = 15;
+        const n = 40;
+        let mouse = { x: -1000, y: -1000, active: false, type: 'repulse' };
 
-        // 1. Création des composants UI comme des entités UDC
-        for (let i = 0; i < n; i++) {
-            const el = document.createElement('div');
-            el.className = 'ui-entity bg-slate-800 border border-blue-500/30 p-4 rounded-lg shadow-xl';
-            el.innerHTML = `<h3 class="font-bold">Composant ${i}</h3><p class="text-xs text-gray-400">ID: ${Math.random().toString(36).substr(2, 5)}</p>`;
-            document.body.appendChild(el);
+        class Entity {
+            constructor(id) {
+                this.id = id;
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.radius = 4 + Math.random() * 4;
+                this.color = `hsla(${190 + Math.random() * 40}, 80%, 60%, 0.8)`;
+                
+                // Création de l'élément DOM associé
+                if(id % 5 === 0) { // Uniquement pour certaines entités
+                    this.dom = document.createElement('div');
+                    this.dom.className = 'node-card';
+                    this.dom.innerHTML = `<div class="text-[10px] text-blue-400 mb-1">NODE_${id}</div><div class="text-xs">DONNÉE VECTORISÉE</div>`;
+                    document.body.appendChild(this.dom);
+                }
+            }
 
-            entities.push({
-                el: el,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                vx: 0,
-                vy: 0,
-                w: 150,
-                h: 80
-            });
-        }
-
-        // 2. Moteur d'émergence (Boucle UDC)
-        function update() {
-            for (let i = 0; i < entities.length; i++) {
-                let e1 = entities[i];
-
-                // Force de répulsion (pour éviter les chevauchements)
-                for (let j = i + 1; j < entities.length; j++) {
-                    let e2 = entities[j];
-                    let dx = e2.x - e1.x;
-                    let dy = e2.y - e1.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-                    if (dist < 200) {
-                        let force = (200 - dist) * 0.05;
-                        let fx = (dx / dist) * force;
-                        let fy = (dy / dist) * force;
-                        e1.vx -= fx; e1.vy -= fy;
-                        e2.vx += fx; e2.vy += fy;
-                    }
+            update() {
+                // Interaction Souris (Champ de force)
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 300) {
+                    const force = (300 - dist) / 300;
+                    const factor = mouse.type === 'repulse' ? -15 : 15;
+                    this.vx += (dx / dist) * force * factor;
+                    this.vy += (dy / dist) * force * factor;
                 }
 
-                // Force d'attraction vers le centre (pour garder l'UI groupée)
-                let cx = window.innerWidth / 2 - e1.x;
-                let cy = window.innerHeight / 2 - e1.y;
-                e1.vx += cx * 0.01;
-                e1.vy += cy * 0.01;
+                // Interaction entre entités (Répulsion locale)
+                entities.forEach(other => {
+                    if (other === this) return;
+                    const odx = other.x - this.x;
+                    const ody = other.y - this.y;
+                    const odist = Math.sqrt(odx*odx + ody*ody);
+                    if (odist < 100) {
+                        const f = (100 - odist) * 0.02;
+                        this.vx -= (odx / odist) * f;
+                        this.vy -= (ody / odist) * f;
+                    }
+                });
 
-                // Application de la physique
-                e1.x += e1.vx;
-                e1.y += e1.vy;
-                e1.vx *= 0.8; // Friction
-                e1.vy *= 0.8;
+                // Attraction centrale (Gravité UDC)
+                this.vx += (window.innerWidth/2 - this.x) * 0.0005;
+                this.vy += (window.innerHeight/2 - this.y) * 0.0005;
 
-                // Mise à jour visuelle
-                e1.el.style.transform = `translate(${e1.x}px, ${e1.y}px)`;
+                // Physique
+                this.vx *= 0.95; // Damping (Inertie)
+                this.vy *= 0.95;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Limites
+                if(this.x < 0 || this.x > window.innerWidth) this.vx *= -0.5;
+                if(this.y < 0 || this.y > window.innerHeight) this.vy *= -0.5;
+
+                // Sync DOM
+                if(this.dom) {
+                    this.dom.style.transform = `translate(${this.x}px, ${this.y}px)`;
+                }
             }
-            requestAnimationFrame(update);
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Dessiner les connexions nerveuses
+                entities.forEach(other => {
+                    const d = Math.sqrt((other.x-this.x)**2 + (other.y-this.y)**2);
+                    if(d < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.strokeStyle = `rgba(59, 130, 246, ${1 - d/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+            }
         }
 
-        update();
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for(let i=0; i<n; i++) entities.push(new Entity(i));
+            document.getElementById('entity-count').innerText = n;
+        }
 
-        // Interaction : Ajout de force au clic
-        window.addEventListener('mousedown', (e) => {
-            entities.forEach(ent => {
-                let dx = ent.x - e.clientX;
-                let dy = ent.y - e.clientY;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                ent.vx += (dx/dist) * 50;
-                ent.vy += (dy/dist) * 50;
+        function loop() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; // Effet de traînée
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            entities.forEach(e => {
+                e.update();
+                e.draw();
             });
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
         });
+
+        window.addEventListener('mousedown', e => {
+            mouse.type = e.button === 0 ? 'repulse' : 'attract';
+            document.getElementById('mode-text').innerText = mouse.type === 'repulse' ? 'RÉPULSION (GAUCHE)' : 'ATTRACTION (DROITE)';
+        });
+        
+        window.addEventListener('contextmenu', e => e.preventDefault());
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        init();
+        loop();
     </script>
 </body>
 </html>
