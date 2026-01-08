@@ -3,197 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UDC Neural Interface</title>
+    <title>Moteur de Stabilité Visuelle - UDC v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { 
-            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-            overflow: hidden; 
-            color: white;
-            margin: 0;
-            height: 100vh;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 0;
-            filter: blur(1px);
-        }
-        .ui-overlay {
-            position: relative;
-            z-index: 10;
-            pointer-events: none;
-        }
-        .node-card {
-            position: absolute;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 12px;
-            padding: 12px;
-            font-family: 'Inter', sans-serif;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            pointer-events: auto;
-            cursor: grab;
-            user-select: none;
-        }
+        body { background: #050505; color: #e0e0e0; overflow: hidden; font-family: 'Inter', sans-serif; }
+        canvas { display: block; cursor: crosshair; }
+        .panel { background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(10px); }
     </style>
 </head>
-<body>
+<body class="flex flex-col h-screen">
 
-    <canvas id="neuralCanvas"></canvas>
-
-    <div class="ui-overlay p-8">
-        <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-            UDC NEURAL REALITY
-        </h1>
-        <p class="text-slate-400 font-mono text-sm mt-2 uppercase tracking-widest">
-            Simulation d'émergence • 117M ops/sec engine logic
-        </p>
-        
-        <div class="mt-8 flex gap-4 pointer-events-auto">
-            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl">
-                <p class="text-[10px] text-slate-500 uppercase">Mode Interaction</p>
-                <p class="text-blue-400 font-bold" id="mode-text">RÉPULSION (GAUCHE)</p>
-            </div>
-            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl">
-                <p class="text-[10px] text-slate-500 uppercase">Entités Actives</p>
-                <p class="text-emerald-400 font-bold" id="entity-count">0</p>
-            </div>
+<div class="panel absolute top-4 left-4 p-5 rounded-xl border border-white/10 z-10 w-72 shadow-2xl">
+    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">UDC Engine v2.0</h1>
+    <p class="text-xs text-gray-400 mb-4 italic">Simulation de stabilité systémique en temps réel</p>
+    
+    <div class="space-y-4">
+        <div>
+            <label class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Force de Couplage (Strength)</label>
+            <input type="range" id="strength" min="0" max="100" value="15" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+        </div>
+        <div>
+            <label class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Momentum (Inertie)</label>
+            <input type="range" id="momentum" min="0" max="95" value="85" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500">
+        </div>
+        <div class="flex justify-between items-center bg-white/5 p-2 rounded">
+            <span class="text-xs">Topologie Small-World</span>
+            <div id="sw-indicator" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('neuralCanvas');
-        const ctx = canvas.getContext('2d');
-        const entities = [];
-        const n = 40;
-        let mouse = { x: -1000, y: -1000, active: false, type: 'repulse' };
+    <div class="mt-6 pt-4 border-t border-white/5">
+        <div class="text-[10px] text-gray-500 mb-1">VARIANCE DU SYSTÈME</div>
+        <div class="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+            <div id="variance-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 100%"></div>
+        </div>
+        <div id="status-text" class="text-[10px] mt-2 text-blue-400 font-mono">CALCUL DU CONSENSUS...</div>
+    </div>
+</div>
 
-        class Entity {
-            constructor(id) {
-                this.id = id;
-                this.x = Math.random() * window.innerWidth;
-                this.y = Math.random() * window.innerHeight;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                this.radius = 4 + Math.random() * 4;
-                this.color = `hsla(${190 + Math.random() * 40}, 80%, 60%, 0.8)`;
-                
-                // Création de l'élément DOM associé
-                if(id % 5 === 0) { // Uniquement pour certaines entités
-                    this.dom = document.createElement('div');
-                    this.dom.className = 'node-card';
-                    this.dom.innerHTML = `<div class="text-[10px] text-blue-400 mb-1">NODE_${id}</div><div class="text-xs">DONNÉE VECTORISÉE</div>`;
-                    document.body.appendChild(this.dom);
-                }
-            }
+<canvas id="simCanvas"></canvas>
 
-            update() {
-                // Interaction Souris (Champ de force)
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                if (dist < 300) {
-                    const force = (300 - dist) / 300;
-                    const factor = mouse.type === 'repulse' ? -15 : 15;
-                    this.vx += (dx / dist) * force * factor;
-                    this.vy += (dy / dist) * force * factor;
-                }
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const strengthInput = document.getElementById('strength');
+    const momentumInput = document.getElementById('momentum');
+    const varianceBar = document.getElementById('variance-bar');
+    const statusText = document.getElementById('status-text');
 
-                // Interaction entre entités (Répulsion locale)
-                entities.forEach(other => {
-                    if (other === this) return;
-                    const odx = other.x - this.x;
-                    const ody = other.y - this.y;
-                    const odist = Math.sqrt(odx*odx + ody*ody);
-                    if (odist < 100) {
-                        const f = (100 - odist) * 0.02;
-                        this.vx -= (odx / odist) * f;
-                        this.vy -= (ody / odist) * f;
-                    }
-                });
+    let width, height;
+    let particles = [];
+    const PARTICLE_COUNT = 1500;
 
-                // Attraction centrale (Gravité UDC)
-                this.vx += (window.innerWidth/2 - this.x) * 0.0005;
-                this.vy += (window.innerHeight/2 - this.y) * 0.0005;
-
-                // Physique
-                this.vx *= 0.95; // Damping (Inertie)
-                this.vy *= 0.95;
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Limites
-                if(this.x < 0 || this.x > window.innerWidth) this.vx *= -0.5;
-                if(this.y < 0 || this.y > window.innerHeight) this.vy *= -0.5;
-
-                // Sync DOM
-                if(this.dom) {
-                    this.dom.style.transform = `translate(${this.x}px, ${this.y}px)`;
-                }
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                
-                // Dessiner les connexions nerveuses
-                entities.forEach(other => {
-                    const d = Math.sqrt((other.x-this.x)**2 + (other.y-this.y)**2);
-                    if(d < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(this.x, this.y);
-                        ctx.lineTo(other.x, other.y);
-                        ctx.strokeStyle = `rgba(59, 130, 246, ${1 - d/150})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
-                    }
-                });
-            }
+    // --- CLASSE ENTITÉ (TON SYSTÈME) ---
+    class Particle {
+        constructor() {
+            this.reset();
         }
 
-        function init() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            for(let i=0; i<n; i++) entities.push(new Entity(i));
-            document.getElementById('entity-count').innerText = n;
+        reset() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.state = Math.random() * 2 * Math.PI; // Phase/État
+            this.id = Math.random();
         }
 
-        function loop() {
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; // Effet de traînée
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            entities.forEach(e => {
-                e.update();
-                e.draw();
+        update(neighbors, globalStrength, momentumFactor) {
+            let forceX = 0;
+            let forceY = 0;
+
+            // Logique de Consensus : les particules veulent s'aligner
+            neighbors.forEach(other => {
+                const dx = other.x - this.x;
+                const dy = other.y - this.y;
+                const distSq = dx * dx + dy * dy;
+                
+                if (distSq < 10000 && distSq > 0) {
+                    const dist = Math.sqrt(distSq);
+                    const pull = (dist - 50) * globalStrength * 0.001;
+                    forceX += (dx / dist) * pull;
+                    forceY += (dy / dist) * pull;
+                }
             });
-            requestAnimationFrame(loop);
+
+            // Application du Momentum (Inertie)
+            this.vx = (this.vx * momentumFactor) + (forceX * (1 - momentumFactor));
+            this.vy = (this.vy * momentumFactor) + (forceY * (1 - momentumFactor));
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Collision bords
+            if (this.x < 0 || this.x > width) this.vx *= -1;
+            if (this.y < 0 || this.y > height) this.vy *= -1;
         }
 
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+        draw() {
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            const hue = 200 + speed * 20;
+            ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.3 + speed})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
 
-        window.addEventListener('mousedown', e => {
-            mouse.type = e.button === 0 ? 'repulse' : 'attract';
-            document.getElementById('mode-text').innerText = mouse.type === 'repulse' ? 'RÉPULSION (GAUCHE)' : 'ATTRACTION (DROITE)';
-        });
+    function init() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(5, 5, 5, 0.15)'; // Traînée pour voir le mouvement
+        ctx.fillRect(0, 0, width, height);
+
+        const strength = strengthInput.value / 100;
+        const momentum = momentumInput.value / 100;
+
+        // On simule par blocs (Topologie optimisée)
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            
+            // Sélection des voisins (Simule le Small-World par échantillonnage)
+            let neighbors = [];
+            for (let j = 0; j < 5; j++) {
+                neighbors.push(particles[Math.floor(Math.random() * particles.length)]);
+            }
+
+            p.update(neighbors, strength, momentum);
+            p.draw();
+        }
+
+        // Calcul de la variance visuelle (Consensus)
+        let totalSpeed = particles.reduce((sum, p) => sum + Math.abs(p.vx) + Math.abs(p.vy), 0);
+        let variance = Math.min(100, (totalSpeed / PARTICLE_COUNT) * 20);
+        varianceBar.style.width = `${variance}%`;
         
-        window.addEventListener('contextmenu', e => e.preventDefault());
+        if (variance < 5) {
+            statusText.innerText = "ÉTAT DE STABILITÉ ATTEINT";
+            statusText.style.color = "#4ade80";
+        } else {
+            statusText.innerText = "CALCUL DU CONSENSUS : " + Math.round(variance) + "% CHAOS";
+            statusText.style.color = "#60a5fa";
+        }
 
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        requestAnimationFrame(animate);
+    }
 
-        init();
-        loop();
-    </script>
+    window.addEventListener('resize', init);
+    init();
+    animate();
+
+</script>
 </body>
 </html>
