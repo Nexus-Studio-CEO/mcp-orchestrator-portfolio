@@ -3,41 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moteur de Stabilité Visuelle - UDC v2</title>
+    <title>UDC Engine v3 - Stress Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #050505; color: #e0e0e0; overflow: hidden; font-family: 'Inter', sans-serif; }
-        canvas { display: block; cursor: crosshair; }
-        .panel { background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(10px); }
+        body { background: #020202; color: #e0e0e0; overflow: hidden; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        .panel { background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        input[type=range] { -webkit-appearance: none; background: #333; height: 4px; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-<div class="panel absolute top-4 left-4 p-5 rounded-xl border border-white/10 z-10 w-72 shadow-2xl">
-    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">UDC Engine v2.0</h1>
-    <p class="text-xs text-gray-400 mb-4 italic">Simulation de stabilité systémique en temps réel</p>
+<div class="panel absolute top-6 left-6 p-6 rounded-2xl z-10 w-80 shadow-2xl">
+    <h1 class="text-2xl font-black tracking-tighter bg-gradient-to-br from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-1">STRESS TEST V3</h1>
+    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-6 font-bold">Analyse de Rupture de Stabilité</p>
     
-    <div class="space-y-4">
+    <div class="space-y-6">
         <div>
-            <label class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Force de Couplage (Strength)</label>
-            <input type="range" id="strength" min="0" max="100" value="15" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+            <div class="flex justify-between mb-2">
+                <label class="text-[10px] font-bold text-gray-400">AGITATION (CHAOS)</label>
+                <span id="chaos-val" class="text-[10px] text-blue-400 font-mono">50%</span>
+            </div>
+            <input type="range" id="chaos" min="0" max="200" value="50" class="w-full">
         </div>
+        
         <div>
-            <label class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Momentum (Inertie)</label>
-            <input type="range" id="momentum" min="0" max="95" value="85" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500">
+            <div class="flex justify-between mb-2">
+                <label class="text-[10px] font-bold text-gray-400">FORCE DE CONSENSUS</label>
+                <span id="strength-val" class="text-[10px] text-cyan-400 font-mono">30%</span>
+            </div>
+            <input type="range" id="strength" min="0" max="100" value="30" class="w-full">
         </div>
-        <div class="flex justify-between items-center bg-white/5 p-2 rounded">
-            <span class="text-xs">Topologie Small-World</span>
-            <div id="sw-indicator" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-        </div>
+
+        <button id="inject-energy" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-lg transition-all uppercase tracking-widest">
+            Injecter Perturbation Massive
+        </button>
     </div>
 
-    <div class="mt-6 pt-4 border-t border-white/5">
-        <div class="text-[10px] text-gray-500 mb-1">VARIANCE DU SYSTÈME</div>
-        <div class="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-            <div id="variance-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 100%"></div>
+    <div class="mt-8">
+        <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-2 tracking-widest">
+            <span>ENTROPIE DU SYSTÈME</span>
+            <span id="variance-percent">0%</span>
         </div>
-        <div id="status-text" class="text-[10px] mt-2 text-blue-400 font-mono">CALCUL DU CONSENSUS...</div>
+        <div class="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
+            <div id="variance-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-300 transition-all duration-100" style="width: 0%"></div>
+        </div>
     </div>
 </div>
 
@@ -46,66 +57,62 @@
 <script>
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
+    const chaosInput = document.getElementById('chaos');
     const strengthInput = document.getElementById('strength');
-    const momentumInput = document.getElementById('momentum');
+    const energyBtn = document.getElementById('inject-energy');
     const varianceBar = document.getElementById('variance-bar');
-    const statusText = document.getElementById('status-text');
+    const variancePercent = document.getElementById('variance-percent');
 
-    let width, height;
-    let particles = [];
-    const PARTICLE_COUNT = 1500;
+    let width, height, particles = [];
+    const COUNT = 1200;
 
-    // --- CLASSE ENTITÉ (TON SYSTÈME) ---
-    class Particle {
+    class Entity {
         constructor() {
-            this.reset();
+            this.x = Math.random() * window.innerWidth;
+            this.y = Math.random() * window.innerHeight;
+            this.vx = 0;
+            this.vy = 0;
+            this.history = [];
         }
 
-        reset() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 2;
-            this.vy = (Math.random() - 0.5) * 2;
-            this.state = Math.random() * 2 * Math.PI; // Phase/État
-            this.id = Math.random();
-        }
+        update(chaos, strength) {
+            // 1. Agitation Brownienne (Chaos)
+            this.vx += (Math.random() - 0.5) * (chaos * 0.1);
+            this.vy += (Math.random() - 0.5) * (chaos * 0.1);
 
-        update(neighbors, globalStrength, momentumFactor) {
-            let forceX = 0;
-            let forceY = 0;
-
-            // Logique de Consensus : les particules veulent s'aligner
-            neighbors.forEach(other => {
-                const dx = other.x - this.x;
-                const dy = other.y - this.y;
-                const distSq = dx * dx + dy * dy;
+            // 2. Recherche de Consensus (Interaction avec 3 voisins aléatoires - Small World)
+            for(let i=0; i<3; i++) {
+                let target = particles[Math.floor(Math.random() * COUNT)];
+                let dx = target.x - this.x;
+                let dy = target.y - this.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
                 
-                if (distSq < 10000 && distSq > 0) {
-                    const dist = Math.sqrt(distSq);
-                    const pull = (dist - 50) * globalStrength * 0.001;
-                    forceX += (dx / dist) * pull;
-                    forceY += (dy / dist) * pull;
+                if(dist > 0) {
+                    // Force de rappel vers le groupe
+                    let pull = (dist - 100) * (strength * 0.0001);
+                    this.vx += (dx/dist) * pull;
+                    this.vy += (dy/dist) * pull;
                 }
-            });
+            }
 
-            // Application du Momentum (Inertie)
-            this.vx = (this.vx * momentumFactor) + (forceX * (1 - momentumFactor));
-            this.vy = (this.vy * momentumFactor) + (forceY * (1 - momentumFactor));
+            // 3. Application de l'inertie (Le Momentum de ton système)
+            this.vx *= 0.92;
+            this.vy *= 0.92;
 
             this.x += this.vx;
             this.y += this.vy;
 
-            // Collision bords
-            if (this.x < 0 || this.x > width) this.vx *= -1;
-            if (this.y < 0 || this.y > height) this.vy *= -1;
+            // Bords élastiques
+            if (this.x < 0 || this.x > width) this.vx *= -1.5;
+            if (this.y < 0 || this.y > height) this.vy *= -1.5;
         }
 
         draw() {
-            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            const hue = 200 + speed * 20;
-            ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.3 + speed})`;
+            const speed = Math.sqrt(this.vx**2 + this.vy**2);
+            const alpha = Math.min(1, 0.1 + speed * 0.2);
+            ctx.fillStyle = `rgba(100, 200, 255, ${alpha})`;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -113,53 +120,44 @@
     function init() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
-        particles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push(new Particle());
-        }
+        particles = Array.from({length: COUNT}, () => new Entity());
     }
 
-    function animate() {
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.15)'; // Traînée pour voir le mouvement
+    energyBtn.onclick = () => {
+        particles.forEach(p => {
+            p.vx += (Math.random() - 0.5) * 100;
+            p.vy += (Math.random() - 0.5) * 100;
+        });
+    };
+
+    function render() {
+        ctx.fillStyle = 'rgba(2, 2, 2, 0.2)';
         ctx.fillRect(0, 0, width, height);
 
-        const strength = strengthInput.value / 100;
-        const momentum = momentumInput.value / 100;
-
-        // On simule par blocs (Topologie optimisée)
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            
-            // Sélection des voisins (Simule le Small-World par échantillonnage)
-            let neighbors = [];
-            for (let j = 0; j < 5; j++) {
-                neighbors.push(particles[Math.floor(Math.random() * particles.length)]);
-            }
-
-            p.update(neighbors, strength, momentum);
-            p.draw();
-        }
-
-        // Calcul de la variance visuelle (Consensus)
-        let totalSpeed = particles.reduce((sum, p) => sum + Math.abs(p.vx) + Math.abs(p.vy), 0);
-        let variance = Math.min(100, (totalSpeed / PARTICLE_COUNT) * 20);
-        varianceBar.style.width = `${variance}%`;
+        const chaos = parseFloat(chaosInput.value);
+        const strength = parseFloat(strengthInput.value);
         
-        if (variance < 5) {
-            statusText.innerText = "ÉTAT DE STABILITÉ ATTEINT";
-            statusText.style.color = "#4ade80";
-        } else {
-            statusText.innerText = "CALCUL DU CONSENSUS : " + Math.round(variance) + "% CHAOS";
-            statusText.style.color = "#60a5fa";
-        }
+        document.getElementById('chaos-val').innerText = chaos + " pts";
+        document.getElementById('strength-val').innerText = strength + " pts";
 
-        requestAnimationFrame(animate);
+        let energyTotal = 0;
+        particles.forEach(p => {
+            p.update(chaos, strength);
+            p.draw();
+            energyTotal += Math.abs(p.vx) + Math.abs(p.vy);
+        });
+
+        // Calcul de l'entropie
+        let entropy = Math.min(100, (energyTotal / COUNT) * 5);
+        varianceBar.style.width = entropy + "%";
+        variancePercent.innerText = Math.round(entropy) + "%";
+
+        requestAnimationFrame(render);
     }
 
-    window.addEventListener('resize', init);
+    window.onresize = init;
     init();
-    animate();
-
+    render();
 </script>
 </body>
 </html>
