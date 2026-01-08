@@ -2,162 +2,145 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UDC Engine v3 - Stress Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UDC Mobile Stress Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #020202; color: #e0e0e0; overflow: hidden; font-family: 'Inter', sans-serif; }
-        canvas { display: block; }
-        .panel { background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        input[type=range] { -webkit-appearance: none; background: #333; height: 4px; border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; }
+        body { background: #050505; color: #fff; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
+        .card { background: #111; border: 1px solid #222; border-radius: 1rem; }
+        .btn { transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="p-4 flex flex-col min-h-screen">
 
-<div class="panel absolute top-6 left-6 p-6 rounded-2xl z-10 w-80 shadow-2xl">
-    <h1 class="text-2xl font-black tracking-tighter bg-gradient-to-br from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-1">STRESS TEST V3</h1>
-    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-6 font-bold">Analyse de Rupture de Stabilité</p>
-    
-    <div class="space-y-6">
-        <div>
-            <div class="flex justify-between mb-2">
-                <label class="text-[10px] font-bold text-gray-400">AGITATION (CHAOS)</label>
-                <span id="chaos-val" class="text-[10px] text-blue-400 font-mono">50%</span>
+    <header class="mb-6">
+        <h1 class="text-2xl font-black text-blue-500 italic">UDC ENGINE</h1>
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Test de Performance sur Hardware Limité</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="card p-4">
+            <div class="text-[9px] font-bold text-gray-500 uppercase mb-1">FPS Actuel</div>
+            <div id="fps-counter" class="text-2xl font-mono text-white">0</div>
+        </div>
+        <div class="card p-4">
+            <div class="text-[9px] font-bold text-gray-500 uppercase mb-1">Entités</div>
+            <div id="entity-counter" class="text-2xl font-mono text-blue-400">0</div>
+        </div>
+    </div>
+
+    <div class="card p-5 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <span id="mode-label" class="text-xs font-bold px-2 py-1 bg-gray-800 rounded text-gray-400 uppercase">Mode: En attente</span>
+            <div id="load-bar-bg" class="w-24 h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div id="load-bar" class="h-full bg-blue-500" style="width: 0%"></div>
             </div>
-            <input type="range" id="chaos" min="0" max="200" value="50" class="w-full">
         </div>
         
-        <div>
-            <div class="flex justify-between mb-2">
-                <label class="text-[10px] font-bold text-gray-400">FORCE DE CONSENSUS</label>
-                <span id="strength-val" class="text-[10px] text-cyan-400 font-mono">30%</span>
-            </div>
-            <input type="range" id="strength" min="0" max="100" value="30" class="w-full">
-        </div>
+        <p id="description" class="text-[11px] text-gray-400 leading-relaxed mb-4">
+            Appuyez sur un bouton pour comparer l'efficacité du calcul sur vos 4 cœurs.
+        </p>
 
-        <button id="inject-energy" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-lg transition-all uppercase tracking-widest">
-            Injecter Perturbation Massive
-        </button>
-    </div>
-
-    <div class="mt-8">
-        <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-2 tracking-widest">
-            <span>ENTROPIE DU SYSTÈME</span>
-            <span id="variance-percent">0%</span>
-        </div>
-        <div class="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
-            <div id="variance-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-300 transition-all duration-100" style="width: 0%"></div>
+        <div class="grid grid-cols-1 gap-3">
+            <button onclick="runTest('classic')" class="btn py-4 bg-red-900/20 border border-red-500/50 text-red-500 rounded-xl font-bold text-xs uppercase">
+                Mode Classique (Lourd)
+            </button>
+            <button onclick="runTest('udc')" class="btn py-4 bg-blue-900/20 border border-blue-500/50 text-blue-500 rounded-xl font-bold text-xs uppercase">
+                Mode UDC (Optimisé)
+            </button>
         </div>
     </div>
-</div>
 
-<canvas id="simCanvas"></canvas>
+    <div class="mt-auto card p-4 border-dashed border-blue-500/30">
+        <h3 class="text-[10px] font-bold text-blue-400 uppercase mb-2 italic">Verdict de Puissance Virtuelle</h3>
+        <div id="verdict" class="text-[11px] text-gray-500">
+            Le test déterminera combien d'entités votre téléphone peut gérer avant de ramer.
+        </div>
+    </div>
 
-<script>
-    const canvas = document.getElementById('simCanvas');
-    const ctx = canvas.getContext('2d');
-    const chaosInput = document.getElementById('chaos');
-    const strengthInput = document.getElementById('strength');
-    const energyBtn = document.getElementById('inject-energy');
-    const varianceBar = document.getElementById('variance-bar');
-    const variancePercent = document.getElementById('variance-percent');
+    <canvas id="procCanvas" style="display:none"></canvas>
 
-    let width, height, particles = [];
-    const COUNT = 1200;
+    <script>
+        let mode = 'none';
+        let count = 0;
+        let running = false;
+        let fps = 0;
+        let lastTime = performance.now();
+        let frames = 0;
 
-    class Entity {
-        constructor() {
-            this.x = Math.random() * window.innerWidth;
-            this.y = Math.random() * window.innerHeight;
-            this.vx = 0;
-            this.vy = 0;
-            this.history = [];
+        const fpsEl = document.getElementById('fps-counter');
+        const countEl = document.getElementById('entity-counter');
+        const modeLabel = document.getElementById('mode-label');
+        const loadBar = document.getElementById('load-bar');
+        const verdict = document.getElementById('verdict');
+        const description = document.getElementById('description');
+
+        function runTest(selectedMode) {
+            mode = selectedMode;
+            count = 100; // Départ
+            running = true;
+            modeLabel.innerText = "Mode: " + (mode === 'classic' ? 'CLASSIQUE' : 'UDC');
+            modeLabel.className = mode === 'classic' ? 
+                "text-xs font-bold px-2 py-1 bg-red-900 text-red-100 rounded uppercase" : 
+                "text-xs font-bold px-2 py-1 bg-blue-900 text-blue-100 rounded uppercase";
+            
+            description.innerText = mode === 'classic' ? 
+                "Calcul force brute : chaque entité vérifie toutes les autres. Très lourd pour un CPU 4 coeurs." : 
+                "Calcul par Consensus : chaque entité ne vérifie que 5 voisins. Utilisation intelligente du hardware.";
+            
+            loop();
         }
 
-        update(chaos, strength) {
-            // 1. Agitation Brownienne (Chaos)
-            this.vx += (Math.random() - 0.5) * (chaos * 0.1);
-            this.vy += (Math.random() - 0.5) * (chaos * 0.1);
+        function loop() {
+            if(!running) return;
 
-            // 2. Recherche de Consensus (Interaction avec 3 voisins aléatoires - Small World)
-            for(let i=0; i<3; i++) {
-                let target = particles[Math.floor(Math.random() * COUNT)];
-                let dx = target.x - this.x;
-                let dy = target.y - this.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
+            const now = performance.now();
+            frames++;
+
+            if (now > lastTime + 1000) {
+                fps = Math.round((frames * 1000) / (now - lastTime));
+                frames = 0;
+                lastTime = now;
                 
-                if(dist > 0) {
-                    // Force de rappel vers le groupe
-                    let pull = (dist - 100) * (strength * 0.0001);
-                    this.vx += (dx/dist) * pull;
-                    this.vy += (dy/dist) * pull;
+                fpsEl.innerText = fps;
+                countEl.innerText = count;
+
+                if (fps > 25) {
+                    // Si c'est fluide, on augmente la charge
+                    let step = mode === 'udc' ? 200 : 50;
+                    count += step;
+                    loadBar.style.width = (count / 5000 * 100) + "%";
+                } else {
+                    // Rupture
+                    running = false;
+                    const boost = mode === 'udc' ? "ÉLEVÉ" : "FAIBLE";
+                    verdict.innerHTML = `<span class="text-white font-bold uppercase">Rupture à ${count} entités.</span><br>Votre téléphone saturait à cause de la limite CPU. En mode UDC, vous pourriez monter bien plus haut.`;
+                    return;
                 }
             }
 
-            // 3. Application de l'inertie (Le Momentum de ton système)
-            this.vx *= 0.92;
-            this.vy *= 0.92;
+            // SIMULATION DU TRAVAIL CPU
+            if (mode === 'classic') {
+                // Complexité Quadratique : O(n²)
+                // On simule une boucle de calcul qui sature la RAM et le CPU
+                let work = Math.min(count, 1500); // Protection pour ne pas figer le tel
+                for(let i=0; i < work; i++) {
+                    for(let j=0; j < work; j++) {
+                        let a = Math.sqrt(i * j);
+                    }
+                }
+            } else {
+                // Complexité Linéaire : O(n) - Ton Système
+                for(let i=0; i < count; i++) {
+                    for(let k=0; k < 5; k++) { // Voisinage Small-World fixe
+                        let a = Math.sqrt(i * k);
+                    }
+                }
+            }
 
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Bords élastiques
-            if (this.x < 0 || this.x > width) this.vx *= -1.5;
-            if (this.y < 0 || this.y > height) this.vy *= -1.5;
+            if(running) requestAnimationFrame(loop);
         }
-
-        draw() {
-            const speed = Math.sqrt(this.vx**2 + this.vy**2);
-            const alpha = Math.min(1, 0.1 + speed * 0.2);
-            ctx.fillStyle = `rgba(100, 200, 255, ${alpha})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function init() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        particles = Array.from({length: COUNT}, () => new Entity());
-    }
-
-    energyBtn.onclick = () => {
-        particles.forEach(p => {
-            p.vx += (Math.random() - 0.5) * 100;
-            p.vy += (Math.random() - 0.5) * 100;
-        });
-    };
-
-    function render() {
-        ctx.fillStyle = 'rgba(2, 2, 2, 0.2)';
-        ctx.fillRect(0, 0, width, height);
-
-        const chaos = parseFloat(chaosInput.value);
-        const strength = parseFloat(strengthInput.value);
-        
-        document.getElementById('chaos-val').innerText = chaos + " pts";
-        document.getElementById('strength-val').innerText = strength + " pts";
-
-        let energyTotal = 0;
-        particles.forEach(p => {
-            p.update(chaos, strength);
-            p.draw();
-            energyTotal += Math.abs(p.vx) + Math.abs(p.vy);
-        });
-
-        // Calcul de l'entropie
-        let entropy = Math.min(100, (energyTotal / COUNT) * 5);
-        varianceBar.style.width = entropy + "%";
-        variancePercent.innerText = Math.round(entropy) + "%";
-
-        requestAnimationFrame(render);
-    }
-
-    window.onresize = init;
-    init();
-    render();
-</script>
+    </script>
 </body>
 </html>
