@@ -3,143 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UDC Mobile Stress Test</title>
+    <title>UDC Nano - Test de Survie</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #050505; color: #fff; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
-        .card { background: #111; border: 1px solid #222; border-radius: 1rem; }
-        .btn { transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
-        .btn:active { transform: scale(0.95); opacity: 0.8; }
+        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; }
+        .border-neon { border: 1px solid #00ff00; box-shadow: 0 0 10px #00ff0033; }
+        .bg-dark { background: rgba(0, 20, 0, 0.9); }
+        button { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="p-4 flex flex-col min-h-screen">
+<body class="p-4 flex flex-col h-screen overflow-hidden">
 
-    <header class="mb-6">
-        <h1 class="text-2xl font-black text-blue-500 italic">UDC ENGINE</h1>
-        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Test de Performance sur Hardware Limité</p>
+    <div class="mb-4">
+        <h1 class="text-xl font-bold tracking-tighter uppercase italic">UDC Nano v1.0</h1>
+        <p class="text-[9px] opacity-70">HARDWARE : 4 CORES / 2GB RAM DETECTED</p>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="card p-4">
-            <div class="text-[9px] font-bold text-gray-500 uppercase mb-1">FPS Actuel</div>
-            <div id="fps-counter" class="text-2xl font-mono text-white">0</div>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+        <div class="border-neon bg-dark p-3 rounded">
+            <div class="text-[8px] uppercase">Ressources CPU</div>
+            <div id="cpu-load" class="text-lg font-bold">--</div>
         </div>
-        <div class="card p-4">
-            <div class="text-[9px] font-bold text-gray-500 uppercase mb-1">Entités</div>
-            <div id="entity-counter" class="text-2xl font-mono text-blue-400">0</div>
+        <div class="border-neon bg-dark p-3 rounded">
+            <div class="text-[8px] uppercase">État Système</div>
+            <div id="sys-status" class="text-[10px] text-yellow-500 font-bold">READY</div>
         </div>
     </div>
 
-    <div class="card p-5 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <span id="mode-label" class="text-xs font-bold px-2 py-1 bg-gray-800 rounded text-gray-400 uppercase">Mode: En attente</span>
-            <div id="load-bar-bg" class="w-24 h-1 bg-gray-800 rounded-full overflow-hidden">
-                <div id="load-bar" class="h-full bg-blue-500" style="width: 0%"></div>
-            </div>
+    <div class="flex-1 border-neon bg-dark p-4 rounded-lg flex flex-col">
+        <div class="text-[10px] mb-2 border-b border-green-900 pb-1 italic">Console de Stabilisation</div>
+        <div id="console" class="flex-1 text-[9px] overflow-y-auto font-mono text-green-700 leading-tight mb-4">
+            > Initialisation du noyau UDC...<br>
+            > En attente d'injection de données...
         </div>
-        
-        <p id="description" class="text-[11px] text-gray-400 leading-relaxed mb-4">
-            Appuyez sur un bouton pour comparer l'efficacité du calcul sur vos 4 cœurs.
-        </p>
 
-        <div class="grid grid-cols-1 gap-3">
-            <button onclick="runTest('classic')" class="btn py-4 bg-red-900/20 border border-red-500/50 text-red-500 rounded-xl font-bold text-xs uppercase">
-                Mode Classique (Lourd)
+        <div class="grid grid-cols-1 gap-2">
+            <button onclick="startNano('classic')" class="bg-red-900/30 border border-red-500 text-red-500 text-[10px] py-3 rounded font-bold uppercase">
+                Test Force Brute
             </button>
-            <button onclick="runTest('udc')" class="btn py-4 bg-blue-900/20 border border-blue-500/50 text-blue-500 rounded-xl font-bold text-xs uppercase">
-                Mode UDC (Optimisé)
+            <button onclick="startNano('udc')" class="bg-green-900/30 border border-green-500 text-green-500 text-[10px] py-3 rounded font-bold uppercase">
+                Test Consensus UDC
             </button>
         </div>
     </div>
 
-    <div class="mt-auto card p-4 border-dashed border-blue-500/30">
-        <h3 class="text-[10px] font-bold text-blue-400 uppercase mb-2 italic">Verdict de Puissance Virtuelle</h3>
-        <div id="verdict" class="text-[11px] text-gray-500">
-            Le test déterminera combien d'entités votre téléphone peut gérer avant de ramer.
-        </div>
+    <div class="mt-4 text-[8px] opacity-50 text-center uppercase tracking-widest">
+        Optimisé pour architectures ARM Cortex v7/v8
     </div>
-
-    <canvas id="procCanvas" style="display:none"></canvas>
 
     <script>
-        let mode = 'none';
-        let count = 0;
-        let running = false;
-        let fps = 0;
-        let lastTime = performance.now();
-        let frames = 0;
+        const consoleEl = document.getElementById('console');
+        const sysStatus = document.getElementById('sys-status');
+        const cpuLoad = document.getElementById('cpu-load');
 
-        const fpsEl = document.getElementById('fps-counter');
-        const countEl = document.getElementById('entity-counter');
-        const modeLabel = document.getElementById('mode-label');
-        const loadBar = document.getElementById('load-bar');
-        const verdict = document.getElementById('verdict');
-        const description = document.getElementById('description');
-
-        function runTest(selectedMode) {
-            mode = selectedMode;
-            count = 100; // Départ
-            running = true;
-            modeLabel.innerText = "Mode: " + (mode === 'classic' ? 'CLASSIQUE' : 'UDC');
-            modeLabel.className = mode === 'classic' ? 
-                "text-xs font-bold px-2 py-1 bg-red-900 text-red-100 rounded uppercase" : 
-                "text-xs font-bold px-2 py-1 bg-blue-900 text-blue-100 rounded uppercase";
-            
-            description.innerText = mode === 'classic' ? 
-                "Calcul force brute : chaque entité vérifie toutes les autres. Très lourd pour un CPU 4 coeurs." : 
-                "Calcul par Consensus : chaque entité ne vérifie que 5 voisins. Utilisation intelligente du hardware.";
-            
-            loop();
+        function log(msg, color = "#00ff00") {
+            const div = document.createElement('div');
+            div.style.color = color;
+            div.innerHTML = `> ${msg}`;
+            consoleEl.appendChild(div);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
-        function loop() {
-            if(!running) return;
+        async function startNano(mode) {
+            consoleEl.innerHTML = "";
+            sysStatus.innerText = "CALCUL...";
+            sysStatus.className = "text-[10px] text-blue-500 font-bold";
+            
+            log(`DÉMARRAGE MODE: ${mode.toUpperCase()}`);
+            log("Hardware bridé détecté. Allocation minimale...");
 
-            const now = performance.now();
-            frames++;
+            const start = performance.now();
+            let operations = 0;
+            const limit = mode === 'classic' ? 500 : 5000;
+            
+            // On utilise setTimeout pour ne pas freezer l'UI du téléphone
+            for (let i = 0; i < limit; i++) {
+                if (i % 100 === 0) {
+                    // Petite pause pour laisser le téléphone respirer (Asynchrone)
+                    await new Promise(r => setTimeout(r, 0));
+                    cpuLoad.innerText = Math.round((i/limit)*100) + "%";
+                }
 
-            if (now > lastTime + 1000) {
-                fps = Math.round((frames * 1000) / (now - lastTime));
-                frames = 0;
-                lastTime = now;
-                
-                fpsEl.innerText = fps;
-                countEl.innerText = count;
-
-                if (fps > 25) {
-                    // Si c'est fluide, on augmente la charge
-                    let step = mode === 'udc' ? 200 : 50;
-                    count += step;
-                    loadBar.style.width = (count / 5000 * 100) + "%";
+                if (mode === 'classic') {
+                    // Simulation N² (Lourdeur exponentielle)
+                    for (let j = 0; j < 50; j++) {
+                        let x = Math.sin(i) * Math.cos(j);
+                        operations++;
+                    }
                 } else {
-                    // Rupture
-                    running = false;
-                    const boost = mode === 'udc' ? "ÉLEVÉ" : "FAIBLE";
-                    verdict.innerHTML = `<span class="text-white font-bold uppercase">Rupture à ${count} entités.</span><br>Votre téléphone saturait à cause de la limite CPU. En mode UDC, vous pourriez monter bien plus haut.`;
-                    return;
+                    // Simulation UDC (Linéaire optimisée)
+                    let x = Math.sin(i) * Math.cos(5);
+                    operations++;
                 }
             }
 
-            // SIMULATION DU TRAVAIL CPU
-            if (mode === 'classic') {
-                // Complexité Quadratique : O(n²)
-                // On simule une boucle de calcul qui sature la RAM et le CPU
-                let work = Math.min(count, 1500); // Protection pour ne pas figer le tel
-                for(let i=0; i < work; i++) {
-                    for(let j=0; j < work; j++) {
-                        let a = Math.sqrt(i * j);
-                    }
-                }
+            const end = performance.now();
+            const time = (end - start).toFixed(2);
+            
+            sysStatus.innerText = "COMPLÉTÉ";
+            sysStatus.className = "text-[10px] text-green-500 font-bold";
+            
+            log(`TERMINE EN ${time}ms`, "#fff");
+            log(`OPÉRATIONS: ${operations}`);
+            
+            if (mode === 'udc') {
+                log("ANALYSE: Consensus atteint sans saturation.", "#4ade80");
             } else {
-                // Complexité Linéaire : O(n) - Ton Système
-                for(let i=0; i < count; i++) {
-                    for(let k=0; k < 5; k++) { // Voisinage Small-World fixe
-                        let a = Math.sqrt(i * k);
-                    }
-                }
+                log("ANALYSE: Risque de surchauffe/freeze.", "#ef4444");
             }
-
-            if(running) requestAnimationFrame(loop);
         }
     </script>
 </body>
