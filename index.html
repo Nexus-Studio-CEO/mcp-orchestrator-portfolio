@@ -2,116 +2,628 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UDC Nano - Test de Survie</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailIR - Tromperie Totale Gmail</title>
     <style>
-        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; }
-        .border-neon { border: 1px solid #00ff00; box-shadow: 0 0 10px #00ff0033; }
-        .bg-dark { background: rgba(0, 20, 0, 0.9); }
-        button { -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #0f0;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .terminal {
+            background: #0a0e27;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0f0;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #0f0;
+            opacity: 0.7;
+        }
+
+        .section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            color: #0f0;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .architecture {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #0f0;
+        }
+
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.05);
+            border-left: 3px solid #0f0;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #0f0;
+            color: #000;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .warning {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #f00;
+            color: #f00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #0f0;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .btn {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 20px #0f0;
+            transform: scale(1.05);
+        }
+
+        .log-output {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .log-line {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+
+        .log-system { color: #00ffff; }
+        .log-intercept { color: #ff00ff; }
+        .log-spoof { color: #ffff00; }
+        .log-success { color: #0f0; }
+        .log-error { color: #f00; }
+
+        input, textarea {
+            background: #000;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .deception-meter {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            border-radius: 8px;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 30px;
+            background: #000;
+            border: 1px solid #0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0f0 0%, #0ff 100%);
+            width: 0%;
+            transition: width 2s ease;
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        .meter-label {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            color: #0f0;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
     </style>
 </head>
-<body class="p-4 flex flex-col h-screen overflow-hidden">
+<body>
+    <div class="terminal">
+        <div class="header">
+            <h1>🔥 INFORMATIQUE RÉALITAIRE - TROMPERIE TOTALE 🔥</h1>
+            <p class="subtitle">Interception Protocolaire Gmail - Service Worker Deception</p>
+        </div>
 
-    <div class="mb-4">
-        <h1 class="text-xl font-bold tracking-tighter uppercase italic">UDC Nano v1.0</h1>
-        <p class="text-[9px] opacity-70">HARDWARE : 4 CORES / 2GB RAM DETECTED</p>
+        <div class="warning">
+            <strong>⚠️ AVERTISSEMENT ÉTHIQUE</strong><br>
+            Ce document explique la THÉORIE de la tromperie protocolaire profonde.<br>
+            L'implémentation réelle nécessite des considérations de sécurité et légales importantes.<br>
+            À des fins éducatives uniquement - comprendre les limites de la sécurité web.
+        </div>
+
+        <div class="section">
+            <h2>🎯 ARCHITECTURE DE TROMPERIE TOTALE</h2>
+            <div class="architecture">
+                <div class="code-block">
+# NIVEAU 1 : INTERCEPTION NAVIGATEUR → GMAIL
+Navigateur demande : GET https://mail.google.com/...
+Service Worker intercepte : "Je suis Gmail !"
+Navigateur reçoit : Page HTML simulée (copie parfaite)
+Résultat : Navigateur croit parler au vrai Gmail
+
+# NIVEAU 2 : SPOOFING CLIENT SMTP
+HTML se présente : "Je suis Mozilla Thunderbird"
+Gmail reçoit : Headers SMTP standard d'un vrai client
+HTML envoie : EHLO smtp.gmail.com (User-Agent falsifié)
+Résultat : Gmail croit parler à Thunderbird
+
+# NIVEAU 3 : MAN-IN-THE-MIDDLE LOCAL
+Requêtes sortantes : Interceptées par Proxy local (Service Worker)
+Réponses entrantes : Modifiées avant affichage
+Certificats SSL : Service Worker génère certificats auto-signés
+Résultat : Contrôle total du flux HTTPS
+
+# NIVEAU 4 : SIMULATION PROTOCOLE OAUTH2
+Gmail demande : OAuth2 authentication flow
+HTML répond : Token flow simulé (localStorage)
+Gmail reçoit : Tokens qui semblent légitimes
+Résultat : Authentification "réussie" sans vrai serveur
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📡 IMPLÉMENTATION - SERVICE WORKER INTERCEPTOR</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Installer Service Worker d'Interception</strong>
+                <div class="code-block">
+// service-worker.js - LE CŒUR DE LA TROMPERIE
+self.addEventListener('install', event => {
+    console.log('[IR] Service Worker de tromperie installé');
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+    console.log('[IR] Tromperie activée - Contrôle total du réseau');
+    event.waitUntil(clients.claim());
+});
+
+// INTERCEPTION TOTALE DES REQUÊTES
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    
+    // SPOOFING GMAIL.COM
+    if (url.hostname.includes('gmail.com') || url.hostname.includes('google.com')) {
+        event.respondWith(interceptGmailRequest(event.request));
+        return;
+    }
+    
+    // SPOOFING SMTP
+    if (url.port === '587' || url.port === '465' || url.port === '25') {
+        event.respondWith(interceptSMTPRequest(event.request));
+        return;
+    }
+    
+    // Laisser passer les autres requêtes
+    event.respondWith(fetch(event.request));
+});
+
+// SIMULER RÉPONSES GMAIL
+async function interceptGmailRequest(request) {
+    console.log('[INTERCEPT] Gmail request interceptée:', request.url);
+    
+    // Générer réponse fake qui ressemble à Gmail
+    const fakeGmailHTML = generateFakeGmailInterface();
+    
+    return new Response(fakeGmailHTML, {
+        status: 200,
+        statusText: 'OK',
+        headers: {
+            'Content-Type': 'text/html',
+            'X-Frame-Options': 'SAMEORIGIN',
+            'X-IR-Spoofed': 'true' // Marqueur secret de tromperie
+        }
+    });
+}
+
+// SIMULER PROTOCOLE SMTP
+async function interceptSMTPRequest(request) {
+    console.log('[SMTP] Connexion SMTP interceptée');
+    
+    // Simuler handshake SMTP
+    const smtpResponse = {
+        code: 220,
+        message: 'smtp.gmail.com ESMTP ready',
+        fake: true
+    };
+    
+    return new Response(JSON.stringify(smtpResponse), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Générer Interface Gmail Fake Parfaite</strong>
+                <div class="code-block">
+function generateFakeGmailInterface() {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gmail - Fake mais Parfait</title>
+    <link rel="icon" href="data:image/png;base64,GMAIL_FAVICON_BASE64">
+    <style>
+        /* Copie EXACTE du CSS de Gmail */
+        /* Obtenu via DevTools → Elements → Copy styles */
+    </style>
+</head>
+<body>
+    <!-- Structure HTML identique à Gmail -->
+    <div class="gmail-header">
+        <img src="data:image/svg+xml;base64,GMAIL_LOGO" alt="Gmail">
     </div>
-
-    <div class="grid grid-cols-2 gap-2 mb-4">
-        <div class="border-neon bg-dark p-3 rounded">
-            <div class="text-[8px] uppercase">Ressources CPU</div>
-            <div id="cpu-load" class="text-lg font-bold">--</div>
-        </div>
-        <div class="border-neon bg-dark p-3 rounded">
-            <div class="text-[8px] uppercase">État Système</div>
-            <div id="sys-status" class="text-[10px] text-yellow-500 font-bold">READY</div>
-        </div>
+    
+    <div class="inbox">
+        <!-- Emails simulés qui semblent réels -->
     </div>
+    
+    <script>
+        // JavaScript qui mime le comportement Gmail
+        console.log('[IR] Interface Gmail fake chargée');
+        
+        // Intercepter envois d'email
+        window.sendEmail = function(to, subject, body) {
+            // Au lieu d'envoyer à Gmail, gérer localement
+            console.log('[SPOOF] Email "envoyé":', to);
+            
+            // Simuler succès Gmail
+            showGmailSuccessMessage();
+        };
+    </script>
+</body>
+</html>
+    `;
+}
+                </div>
+            </div>
 
-    <div class="flex-1 border-neon bg-dark p-4 rounded-lg flex flex-col">
-        <div class="text-[10px] mb-2 border-b border-green-900 pb-1 italic">Console de Stabilisation</div>
-        <div id="console" class="flex-1 text-[9px] overflow-y-auto font-mono text-green-700 leading-tight mb-4">
-            > Initialisation du noyau UDC...<br>
-            > En attente d'injection de données...
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Spoofing Headers SMTP pour Tromper Gmail</strong>
+                <div class="code-block">
+// Quand on veut VRAIMENT envoyer à Gmail (pas juste simuler)
+async function sendToRealGmailWithSpoofing(emailData) {
+    // Headers qui font croire qu'on est Thunderbird/Outlook
+    const spoofedHeaders = {
+        'User-Agent': 'Mozilla Thunderbird 115.0',
+        'X-Mailer': 'Microsoft Outlook 16.0',
+        'X-Originating-IP': '[192.168.1.1]', // IP locale banale
+        'MIME-Version': '1.0',
+        'Content-Type': 'multipart/mixed'
+    };
+    
+    // Utiliser SMTP.js MAIS avec headers spoofés
+    const response = await fetch('https://api.smtp2go.com/v3/email/send', {
+        method: 'POST',
+        headers: {
+            ...spoofedHeaders,
+            'X-Smtp2go-Api-Key': 'FAKE_KEY' // Clé API simulée
+        },
+        body: JSON.stringify({
+            sender: 'daouda.anzize@fakebutreal.com',
+            recipients: [emailData.to],
+            subject: emailData.subject,
+            html_body: emailData.body
+        })
+    });
+    
+    // Gmail reçoit un email qui semble venir d'un vrai client
+    // Mais c'est notre HTML qui l'a envoyé !
+}
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-2">
-            <button onclick="startNano('classic')" class="bg-red-900/30 border border-red-500 text-red-500 text-[10px] py-3 rounded font-bold uppercase">
-                Test Force Brute
-            </button>
-            <button onclick="startNano('udc')" class="bg-green-900/30 border border-green-500 text-green-500 text-[10px] py-3 rounded font-bold uppercase">
-                Test Consensus UDC
-            </button>
-        </div>
-    </div>
+        <div class="section">
+            <h2>🧪 DÉMONSTRATION LIVE DE TROMPERIE</h2>
+            
+            <div class="deception-meter">
+                <h3>Niveau de Tromperie Active</h3>
+                <div class="meter-bar">
+                    <div class="meter-fill" id="deceptionMeter"></div>
+                    <div class="meter-label" id="deceptionLabel">0% - Initialisation...</div>
+                </div>
+            </div>
 
-    <div class="mt-4 text-[8px] opacity-50 text-center uppercase tracking-widest">
-        Optimisé pour architectures ARM Cortex v7/v8
+            <div class="log-output" id="logOutput">
+                <div class="log-line log-system">[SYSTEM] Initialisation du système de tromperie IR...</div>
+            </div>
+
+            <button class="btn" onclick="registerServiceWorker()">1. Installer Service Worker Interceptor</button>
+            <button class="btn" onclick="testGmailIntercept()">2. Tester Interception Gmail</button>
+            <button class="btn" onclick="spoofSMTPHeaders()">3. Générer Headers SMTP Spoofés</button>
+            <button class="btn" onclick="fullDeceptionDemo()">🔥 TROMPERIE TOTALE 🔥</button>
+        </div>
+
+        <div class="section">
+            <h2>📧 Composer Email (Spoofing Mode)</h2>
+            <input type="email" id="recipientEmail" placeholder="Destinataire (ex: someone@gmail.com)">
+            <input type="text" id="emailSubject" placeholder="Objet">
+            <textarea id="emailBody" placeholder="Message..."></textarea>
+            <button class="btn" onclick="sendSpoofedEmail()">📤 Envoyer (Mode Spoofing)</button>
+        </div>
+
+        <div class="success">
+            <strong>✅ RÉSULTAT DE LA TROMPERIE RÉUSSIE :</strong><br>
+            - Gmail croit parler à Thunderbird/Outlook<br>
+            - Navigateur croit être sur gmail.com<br>
+            - Utilisateur voit interface parfaitement identique<br>
+            - Emails "envoyés" via headers spoofés<br>
+            - Aucun serveur backend - Tout en HTML/JS<br>
+            <br>
+            <strong>C'EST ÇA L'INFORMATIQUE RÉALITAIRE TOTALE !</strong>
+        </div>
+
+        <div class="warning">
+            <strong>🔒 POURQUOI ÇA NE MARCHE PAS VRAIMENT (Limites de Sécurité) :</strong><br><br>
+            
+            <strong>1. CORS (Cross-Origin Resource Sharing)</strong><br>
+            Gmail bloque les requêtes cross-origin depuis HTML standalone<br>
+            <br>
+            <strong>2. Certificate Pinning</strong><br>
+            Gmail vérifie que le certificat SSL est le vrai certificat Google<br>
+            Service Worker ne peut pas générer de certificat valide<br>
+            <br>
+            <strong>3. SMTP Authentication</strong><br>
+            Gmail exige OAuth2 avec tokens signés par Google<br>
+            Impossible de générer tokens valides sans clé privée Google<br>
+            <br>
+            <strong>4. Content Security Policy (CSP)</strong><br>
+            Gmail envoie headers CSP qui bloquent injection de code<br>
+            <br>
+            <strong>🎯 MAIS... La théorie reste valide pour comprendre IR !</strong><br>
+            La tromperie FONCTIONNERAIT si ces protections n'existaient pas.<br>
+            C'est exactement le principe VR : tromper les canaux d'accès.
+        </div>
     </div>
 
     <script>
-        const consoleEl = document.getElementById('console');
-        const sysStatus = document.getElementById('sys-status');
-        const cpuLoad = document.getElementById('cpu-load');
+        let deceptionLevel = 0;
+        const logOutput = document.getElementById('logOutput');
 
-        function log(msg, color = "#00ff00") {
-            const div = document.createElement('div');
-            div.style.color = color;
-            div.innerHTML = `> ${msg}`;
-            consoleEl.appendChild(div);
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+        function addLog(message, type = 'system') {
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(line);
+            logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        async function startNano(mode) {
-            consoleEl.innerHTML = "";
-            sysStatus.innerText = "CALCUL...";
-            sysStatus.className = "text-[10px] text-blue-500 font-bold";
+        function updateDeceptionMeter(level) {
+            deceptionLevel = Math.min(level, 100);
+            const meter = document.getElementById('deceptionMeter');
+            const label = document.getElementById('deceptionLabel');
             
-            log(`DÉMARRAGE MODE: ${mode.toUpperCase()}`);
-            log("Hardware bridé détecté. Allocation minimale...");
-
-            const start = performance.now();
-            let operations = 0;
-            const limit = mode === 'classic' ? 500 : 5000;
+            meter.style.width = deceptionLevel + '%';
+            label.textContent = `${deceptionLevel}% - Tromperie Active`;
             
-            // On utilise setTimeout pour ne pas freezer l'UI du téléphone
-            for (let i = 0; i < limit; i++) {
-                if (i % 100 === 0) {
-                    // Petite pause pour laisser le téléphone respirer (Asynchrone)
-                    await new Promise(r => setTimeout(r, 0));
-                    cpuLoad.innerText = Math.round((i/limit)*100) + "%";
-                }
-
-                if (mode === 'classic') {
-                    // Simulation N² (Lourdeur exponentielle)
-                    for (let j = 0; j < 50; j++) {
-                        let x = Math.sin(i) * Math.cos(j);
-                        operations++;
-                    }
-                } else {
-                    // Simulation UDC (Linéaire optimisée)
-                    let x = Math.sin(i) * Math.cos(5);
-                    operations++;
-                }
-            }
-
-            const end = performance.now();
-            const time = (end - start).toFixed(2);
-            
-            sysStatus.innerText = "COMPLÉTÉ";
-            sysStatus.className = "text-[10px] text-green-500 font-bold";
-            
-            log(`TERMINE EN ${time}ms`, "#fff");
-            log(`OPÉRATIONS: ${operations}`);
-            
-            if (mode === 'udc') {
-                log("ANALYSE: Consensus atteint sans saturation.", "#4ade80");
-            } else {
-                log("ANALYSE: Risque de surchauffe/freeze.", "#ef4444");
+            if (deceptionLevel === 100) {
+                label.textContent = '100% - TROMPERIE TOTALE ACTIVÉE ! 🔥';
             }
         }
+
+        async function registerServiceWorker() {
+            addLog('Tentative d\'installation du Service Worker...', 'system');
+            
+            // Note: En réalité, le Service Worker doit être dans un fichier séparé
+            // et nécessite HTTPS. Ceci est une simulation.
+            
+            setTimeout(() => {
+                addLog('❌ Service Worker nécessite fichier séparé + HTTPS', 'error');
+                addLog('✅ THÉORIE : Service Worker installerait interception totale', 'success');
+                updateDeceptionMeter(25);
+            }, 1000);
+        }
+
+        function testGmailIntercept() {
+            addLog('Test interception gmail.com...', 'intercept');
+            
+            setTimeout(() => {
+                addLog('INTERCEPT: GET https://mail.google.com/mail/u/0/...', 'intercept');
+                addLog('SPOOF: Génération réponse fake Gmail...', 'spoof');
+                addLog('SUCCESS: Navigateur reçoit HTML simulé Gmail', 'success');
+                updateDeceptionMeter(50);
+            }, 1000);
+        }
+
+        function spoofSMTPHeaders() {
+            addLog('Génération headers SMTP spoofés...', 'spoof');
+            
+            const spoofedHeaders = {
+                'User-Agent': 'Mozilla Thunderbird 115.0',
+                'X-Mailer': 'Microsoft Outlook 16.0',
+                'MIME-Version': '1.0',
+                'Content-Type': 'multipart/mixed'
+            };
+            
+            setTimeout(() => {
+                addLog('SPOOF: Headers générés:', 'spoof');
+                Object.entries(spoofedHeaders).forEach(([key, value]) => {
+                    addLog(`  ${key}: ${value}`, 'spoof');
+                });
+                addLog('SUCCESS: Gmail croirait parler à Thunderbird !', 'success');
+                updateDeceptionMeter(75);
+            }, 1000);
+        }
+
+        function fullDeceptionDemo() {
+            addLog('🔥 DÉMONSTRATION TROMPERIE TOTALE 🔥', 'system');
+            addLog('', 'system');
+            
+            let step = 0;
+            const steps = [
+                { delay: 500, msg: '[ÉTAPE 1] Service Worker intercepte requête gmail.com', type: 'intercept' },
+                { delay: 1000, msg: '[ÉTAPE 2] Génération interface Gmail fake parfaite', type: 'spoof' },
+                { delay: 1500, msg: '[ÉTAPE 3] Navigateur affiche fake Gmail (croit que c\'est réel)', type: 'success' },
+                { delay: 2000, msg: '[ÉTAPE 4] Utilisateur compose email dans fake interface', type: 'system' },
+                { delay: 2500, msg: '[ÉTAPE 5] Clic "Envoyer" → Interception du formulaire', type: 'intercept' },
+                { delay: 3000, msg: '[ÉTAPE 6] Génération headers SMTP spoofés (User-Agent: Thunderbird)', type: 'spoof' },
+                { delay: 3500, msg: '[ÉTAPE 7] Envoi à vrai Gmail avec headers spoofés', type: 'intercept' },
+                { delay: 4000, msg: '[ÉTAPE 8] Gmail reçoit email de "Thunderbird" (en réalité notre HTML)', type: 'spoof' },
+                { delay: 4500, msg: '[ÉTAPE 9] Gmail répond "250 OK Message accepted"', type: 'success' },
+                { delay: 5000, msg: '[ÉTAPE 10] Fake interface affiche "Message envoyé ✓" (comme vrai Gmail)', type: 'success' },
+                { delay: 5500, msg: '', type: 'system' },
+                { delay: 6000, msg: '🎯 RÉSULTAT: Tromperie sur 3 niveaux simultanés:', type: 'success' },
+                { delay: 6500, msg: '  ✅ Navigateur trompé (croit être sur gmail.com)', type: 'success' },
+                { delay: 7000, msg: '  ✅ Gmail trompé (croit parler à Thunderbird)', type: 'success' },
+                { delay: 7500, msg: '  ✅ Utilisateur trompé (voit interface identique)', type: 'success' },
+                { delay: 8000, msg: '', type: 'system' },
+                { delay: 8500, msg: '🔥 C\'EST ÇA L\'INFORMATIQUE RÉALITAIRE ! 🔥', type: 'success' }
+            ];
+
+            steps.forEach(({ delay, msg, type }) => {
+                setTimeout(() => {
+                    if (msg) addLog(msg, type);
+                    step++;
+                    updateDeceptionMeter(Math.min((step / steps.length) * 100, 100));
+                }, delay);
+            });
+        }
+
+        function sendSpoofedEmail() {
+            const to = document.getElementById('recipientEmail').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+
+            if (!to || !subject || !body) {
+                addLog('❌ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            addLog(`📧 Préparation envoi spoofé vers ${to}...`, 'system');
+            addLog('SPOOF: User-Agent → Mozilla Thunderbird', 'spoof');
+            addLog('SPOOF: X-Mailer → Microsoft Outlook', 'spoof');
+            addLog('INTERCEPT: Connexion SMTP simulée...', 'intercept');
+            
+            setTimeout(() => {
+                addLog(`✅ Email "envoyé" (en théorie) !`, 'success');
+                addLog('⚠️ En pratique: Bloqué par CORS/OAuth2/Certificate Pinning', 'error');
+                addLog('💡 Mais la THÉORIE de tromperie reste valide !', 'system');
+            }, 2000);
+        }
+
+        // Auto-start démo
+        addLog('Système IR initialisé - Prêt pour tromperie protocolaire', 'system');
+        addLog('Cliquez sur les boutons pour voir la tromperie en action !', 'system');
     </script>
 </body>
 </html>
